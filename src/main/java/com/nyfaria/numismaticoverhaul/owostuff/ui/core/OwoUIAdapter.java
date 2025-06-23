@@ -163,9 +163,10 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
 
     @Override
     public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTicks) {
+        if (!(matrices instanceof Drawer)) matrices = Drawer.of(matrices);
+        var owoContext = (Drawer) matrices;
         try {
             isRendering = true;
-
             if (this.captureFrame) RenderDoc.startFrameCapture();
 
             final var delta = Minecraft.getInstance().getDeltaFrameTime();
@@ -177,12 +178,12 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
             GlStateManager._enableScissorTest();
 
             GlStateManager._scissorBox(0, 0, window.getWidth(), window.getHeight());
-            this.rootComponent.draw((Drawer) matrices, mouseX, mouseY, partialTicks, delta);
+            this.rootComponent.draw(owoContext, mouseX, mouseY, partialTicks, delta);
 
             GlStateManager._disableScissorTest();
             RenderSystem.disableDepthTest();
 
-            this.rootComponent.drawTooltip((Drawer) matrices, mouseX, mouseY, partialTicks, delta);
+            this.rootComponent.drawTooltip(owoContext, mouseX, mouseY, partialTicks, delta);
 
             final var hovered = this.rootComponent.childAt(mouseX, mouseY);
             if (!disposed && hovered != null && hovered.cursorStyle() != this.lastCursorStyle) {
