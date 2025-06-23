@@ -15,11 +15,14 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.component.TextureComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.FlowLayout;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.ScrollContainer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.inject.ButtonWidgetExtension;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.UISounds;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
@@ -51,6 +54,10 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
         super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.asset(new ResourceLocation(NumismaticOverhaul.MODID,"shop")));
         this.inventoryLabelY += 1;
         this.titleLabelY = 5;
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
     }
 
     @Override
@@ -202,15 +209,15 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
     }
 
     private FlowLayout makeTabButton(Item icon, boolean active, Button.OnPress onPress) {
-        var buttonContainer = this.model.expandTemplate(FlowLayout.class, "tab-button", Map.of("icon-item", Registry.ITEM.getKey(icon).toString()));
+        var buttonContainer = this.model.expandTemplate(FlowLayout.class, "tab-button", Map.of("icon-item", BuiltInRegistries.ITEM.getKey(icon).toString()));
 
-        final Button button = buttonContainer.childByIdOther(Button.class, "tab-button");
+        final var button = ((ParentComponent)buttonContainer).childByIdOther(Button.class, "tab-button");
         this.tabButtons.add(button);
 
         button.active = active;
         ((ButtonWidgetExtension)button).onPress(onPress);
 
-        return buttonContainer;
+        return (FlowLayout) buttonContainer;
     }
 
     private <C extends ModComponent> C component(Class<C> componentClass, String id) {

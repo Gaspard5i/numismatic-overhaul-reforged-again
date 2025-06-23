@@ -3,9 +3,10 @@ package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.BlockEntityAccessor;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseComponent;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public class BlockComponent extends BaseComponent {
 
@@ -29,22 +31,22 @@ public class BlockComponent extends BaseComponent {
 
     @Override
     @SuppressWarnings("NonAsciiCharacters")
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-        matrices.pushPose();
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        matrices.pose().pushPose();
 
-        matrices.translate(x + this.width / 2f, y + this.height / 2f, 100);
-        matrices.scale(40 * this.width / 64f, -40 * this.height / 64f, 40);
+        matrices.pose().translate(x + this.width / 2f, y + this.height / 2f, 100);
+        matrices.pose().scale(40 * this.width / 64f, -40 * this.height / 64f, 40);
 
-        matrices.mulPose(Vector3f.XP.rotationDegrees(30));
-        matrices.mulPose(Vector3f.YP.rotationDegrees(45 + 180));
+        matrices.pose().mulPose(Axis.XP.rotationDegrees(30));
+        matrices.pose().mulPose(Axis.YP.rotationDegrees(45 + 180));
 
-        matrices.translate(-.5, -.5, -.5);
+        matrices.pose().translate(-.5, -.5, -.5);
 
         RenderSystem.runAsFancy(() -> {
             final var vertexConsumers = client.renderBuffers().bufferSource();
             if (this.state.getRenderShape() != RenderShape.ENTITYBLOCK_ANIMATED) {
                 this.client.getBlockRenderer().renderSingleBlock(
-                        this.state, matrices, vertexConsumers,
+                        this.state, matrices.pose(), vertexConsumers,
                         LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY
                 );
             }
@@ -52,7 +54,7 @@ public class BlockComponent extends BaseComponent {
             if (this.entity != null) {
                 var медведь = this.client.getBlockEntityRenderDispatcher().getRenderer(this.entity);
                 if (медведь != null) {
-                    медведь.render(entity, partialTicks, matrices, vertexConsumers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                    медведь.render(entity, partialTicks, matrices.pose(), vertexConsumers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
                 }
             }
 
@@ -61,7 +63,7 @@ public class BlockComponent extends BaseComponent {
             Lighting.setupFor3DItems();
         });
 
-        matrices.popPose();
+        matrices.pose().popPose();
     }
 
     protected static void prepareBlockEntity(BlockState state, BlockEntity blockEntity, @Nullable CompoundTag nbt) {

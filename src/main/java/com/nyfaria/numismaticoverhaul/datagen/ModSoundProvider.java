@@ -1,6 +1,6 @@
 package com.nyfaria.numismaticoverhaul.datagen;
 
-import net.minecraft.data.DataGenerator;
+/*import net.minecraft.data.DataGenerator;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.SoundDefinition;
@@ -22,4 +22,4 @@ public class ModSoundProvider extends SoundDefinitionsProvider {
     public void reSound(RegistryObject<SoundEvent> entry){
         add(entry,SoundDefinition.definition().with(sound(ForgeRegistries.SOUND_EVENTS.getKey(entry.get()))));
     }
-}
+}*/

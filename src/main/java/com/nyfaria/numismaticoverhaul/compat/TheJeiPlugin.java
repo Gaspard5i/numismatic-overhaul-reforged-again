@@ -5,7 +5,6 @@ import com.nyfaria.numismaticoverhaul.client.gui.ShopScreen;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
-import mezz.jei.common.gui.GuiProperties;
 import net.minecraft.resources.ResourceLocation;
 
 @JeiPlugin

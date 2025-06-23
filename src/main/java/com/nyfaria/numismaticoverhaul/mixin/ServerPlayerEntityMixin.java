@@ -18,7 +18,7 @@ public class ServerPlayerEntityMixin {
     public void onServerDeath(CallbackInfo ci) {
         var player = (Player) (Object) this;
 
-        final var world = player.level;
+        final var world = player.level();
         if (world.isClientSide) return;
 
         final CurrencyHolder component = CurrencyHolderAttacher.getExampleHolderUnwrap(player);

@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ModLangProvider extends LanguageProvider {
+/*public class ModLangProvider extends LanguageProvider {
 
     protected static final Map<String, String> REPLACE_LIST = ImmutableMap.of(
             "tnt", "TNT",
@@ -61,4 +61,4 @@ public class ModLangProvider extends LanguageProvider {
     protected String checkReplace(String string) {
         return REPLACE_LIST.containsKey(string) ? REPLACE_LIST.get(string) : StringUtils.capitalize(string);
     }
-}
+}*/

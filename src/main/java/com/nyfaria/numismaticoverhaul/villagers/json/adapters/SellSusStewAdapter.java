@@ -5,6 +5,7 @@ import com.nyfaria.numismaticoverhaul.currency.CurrencyHelper;
 import com.nyfaria.numismaticoverhaul.villagers.exceptions.DeserializationException;
 import com.nyfaria.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
@@ -29,7 +30,7 @@ public class SellSusStewAdapter extends TradeJsonAdapter {
         final int duration = GsonHelper.getAsInt(json, "duration", 100);
 
         final var effectId = new ResourceLocation(GsonHelper.getAsString(json, "effect_id"));
-        final var effect = Registry.MOB_EFFECT.getOptional(effectId)
+        final var effect = BuiltInRegistries.MOB_EFFECT.getOptional(effectId)
                 .orElseThrow(() -> new DeserializationException("Unknown status effect '" + effectId + "'"));
 
         return new Factory(effect, price, duration, villager_experience, price_multiplier, max_uses);

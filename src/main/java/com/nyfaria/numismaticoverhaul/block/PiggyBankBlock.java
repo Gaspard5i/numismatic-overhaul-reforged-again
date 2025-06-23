@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -147,7 +148,7 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
     }
 //todo: particles
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof PiggyBankBlockEntity piggyBank) {
             var tool = builder.getOptionalParameter(LootContextParams.TOOL);
             if (tool != null && tool.hasCustomHoverName() && Objects.equals(tool.getHoverName().getString(), "Hammer")) {
@@ -159,14 +160,15 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
                 piggyBank.inventory().stream().filter(stack -> !stack.isEmpty()).forEach(drops::add);
                 return drops;
             } else {
-                builder.withDynamicDrop(new ResourceLocation("contents"), (context, consumer) -> {
-                    piggyBank.inventory().forEach(consumer);
+                builder.withDynamicDrop(new ResourceLocation("contents"), (context) -> {
+                    piggyBank.inventory().forEach(itemStack -> itemStack.getItem());
                 });
             }
         }
 
         return super.getDrops(state, builder);
     }
+
 
     @Nullable
     @Override

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.nyfaria.numismaticoverhaul.currency.CurrencyHelper;
 import com.nyfaria.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -40,7 +41,7 @@ public class SellSingleEnchantmentAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            List<Enchantment> list = Registry.ENCHANTMENT.stream().filter(Enchantment::isTradeable).collect(Collectors.toList());
+            List<Enchantment> list = BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isTradeable).collect(Collectors.toList());
             Enchantment enchantment = list.get(random.nextInt(list.size()));
 
             int enchantmentLevel = Mth.nextInt(random, enchantment.getMinLevel(), enchantment.getMaxLevel());

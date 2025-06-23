@@ -8,6 +8,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModelParsingException;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -94,7 +95,7 @@ public class GridLayout extends BaseParentComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         super.draw(matrices, mouseX, mouseY, partialTicks, delta);
         this.drawChildren(matrices, mouseX, mouseY, partialTicks, delta, this.nonNullChildren);
     }

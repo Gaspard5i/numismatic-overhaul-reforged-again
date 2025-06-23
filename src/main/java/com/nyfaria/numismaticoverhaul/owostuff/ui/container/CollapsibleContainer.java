@@ -1,7 +1,7 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.container;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.component.Components;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.component.LabelComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class CollapsibleContainer extends VerticalFlowLayout {
 
-    public static final Surface SURFACE = (matrices, component) -> Drawer.fill(matrices,
+    public static final Surface SURFACE = (matrices, component) -> matrices.fill(
             component.x() + 5,
             component.y(),
             component.x() + 6,
@@ -162,14 +162,14 @@ public class CollapsibleContainer extends VerticalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-            matrices.pushPose();
-            matrices.translate(this.x + this.width / 2f - 1, this.y + this.height / 2f - 1, 0);
-            matrices.mulPose(Vector3f.ZP.rotationDegrees(this.rotation));
-            matrices.translate(-(this.x + this.width / 2f - 1), -(this.y + this.height / 2f - 1), 0);
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+            matrices.pose().pushPose();
+            matrices.pose().translate(this.x + this.width / 2f - 1, this.y + this.height / 2f - 1, 0);
+            matrices.pose().mulPose(Axis.ZP.rotationDegrees(this.rotation));
+            matrices.pose().translate(-(this.x + this.width / 2f - 1), -(this.y + this.height / 2f - 1), 0);
 
             super.draw(matrices, mouseX, mouseY, partialTicks, delta);
-            matrices.popPose();
+            matrices.pose().popPose();
         }
     }
 }

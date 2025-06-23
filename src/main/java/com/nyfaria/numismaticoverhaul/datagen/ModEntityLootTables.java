@@ -1,20 +1,6 @@
 package com.nyfaria.numismaticoverhaul.datagen;
 
-import net.minecraft.data.loot.EntityLoot;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-
-import java.util.List;
-
-public class ModEntityLootTables extends EntityLoot {
+/*public class ModEntityLootTables extends EntityLoot {
     @Override
     protected void addTables() {
     }
@@ -74,4 +60,4 @@ public class ModEntityLootTables extends EntityLoot {
         }
     }
 
-}
+}*/

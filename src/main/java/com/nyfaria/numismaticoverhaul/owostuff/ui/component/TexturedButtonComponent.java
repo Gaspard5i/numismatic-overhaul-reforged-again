@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.ClickableWidgetAccessor;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
@@ -26,9 +27,12 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.util.EventSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -52,7 +56,7 @@ public class TexturedButtonComponent extends Button implements ModComponent {
     protected boolean textShadow = true;
 
     protected TexturedButtonComponent(ResourceLocation texture, int width, int height, int u, int v, int textureWidth, int textureHeight, Component message, OnPress onPress) {
-        super(0, 0, width, height, message, onPress);
+        super(0, 0, width, height, message, onPress, Button.DEFAULT_NARRATION);
         this.texture = texture;
         this.u = u;
         this.v = v;
@@ -61,7 +65,7 @@ public class TexturedButtonComponent extends Button implements ModComponent {
     }
 
     @Override
-    public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, this.texture);
 
@@ -73,16 +77,18 @@ public class TexturedButtonComponent extends Button implements ModComponent {
         }
 
         RenderSystem.enableDepthTest();
-        Drawer.blit(matrices, this.x, this.y, this.u, renderV, this.width, this.height, this.textureWidth, this.textureHeight);
+        matrices.blit(this.texture, this.getX(), this.getY(), this.u, renderV, this.width, this.height, this.textureWidth, this.textureHeight);
 
         var textRenderer = Minecraft.getInstance().font;
         if (this.textShadow) {
-            Drawer.drawCenteredString(matrices, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, 0xFFFFFF);
+            matrices.drawCenteredString(textRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFFFFF);
         } else {
-            textRenderer.draw(matrices, this.getMessage(), this.x + this.width / 2f - textRenderer.width(this.getMessage()) / 2f, this.y + (this.height - 8) / 2f, 0xFFFFFF);
+            matrices.drawString(textRenderer, this.getMessage().toString(), (int) (this.getX() + this.width / 2f - textRenderer.width(this.getMessage()) / 2f), (int) (this.getY() + (this.height - 8) / 2f), 0xFFFFFF);
         }
 
-        if (this.isHovered) this.renderToolTip(matrices, mouseX, mouseY);
+        Tooltip tooltip = ((ClickableWidgetAccessor) this).owo$getTooltip();
+        if (this.isHovered() && tooltip != null)
+            matrices.renderTooltip(textRenderer, tooltip.toCharSequence(Minecraft.getInstance()), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
     }
 
     @Override
@@ -124,7 +130,8 @@ public class TexturedButtonComponent extends Button implements ModComponent {
             textureHeight = UIParsing.parseSignedInt(element.getAttributeNode("texture-height"));
         }
 
-        return Components.texturedButton(textureId, Component.empty(), width, height, u, v, textureWidth, textureHeight, button -> {});
+        return Components.texturedButton(textureId, Component.empty(), width, height, u, v, textureWidth, textureHeight, button -> {
+        });
     }
 
     @Unique
@@ -239,7 +246,7 @@ public class TexturedButtonComponent extends Button implements ModComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.owo$getWrapper().draw(matrices, mouseX, mouseY, partialTicks, delta);
     }
 

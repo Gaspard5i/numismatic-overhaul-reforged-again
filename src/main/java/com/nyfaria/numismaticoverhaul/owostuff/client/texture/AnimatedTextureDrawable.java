@@ -3,10 +3,9 @@ package com.nyfaria.numismaticoverhaul.owostuff.client.texture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.resources.ResourceLocation;
-
-import static net.minecraft.client.gui.GuiComponent.blit;
 
 /**
  * A drawable that can draw an animated texture, very similar to how
@@ -17,7 +16,7 @@ import static net.minecraft.client.gui.GuiComponent.blit;
  * @author Tempora
  * @author glisco
  */
-public class AnimatedTextureDrawable implements Widget {
+public class AnimatedTextureDrawable implements Renderable {
 
     private final SpriteSheetMetadata metadata;
     private final ResourceLocation texture;
@@ -70,7 +69,7 @@ public class AnimatedTextureDrawable implements Widget {
      * Renders this drawable at the given position. The position
      * of this drawable is mutated non-temporarily
      */
-    public void render(int x, int y, PoseStack matrixStack, int mouseX, int mouseY, float delta) {
+    public void render(int x, int y, GuiGraphics matrixStack, int mouseX, int mouseY, float delta) {
         this.x = x;
         this.y = y;
         this.render(matrixStack, mouseX, mouseY, delta);
@@ -78,7 +77,7 @@ public class AnimatedTextureDrawable implements Widget {
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         if (startTime == -1L) startTime = Util.getMillis();
 
         long currentTime = Util.getMillis();
@@ -89,12 +88,12 @@ public class AnimatedTextureDrawable implements Widget {
             frame = 0;
         }
 
-        RenderSystem.setShaderTexture(0, texture);
+        //RenderSystem.setShaderTexture(0, texture);
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
 
-        blit(matrices, x, y, (frame / rows) * metadata.frameWidth(), (frame % rows) * metadata.frameHeight(), width, height, metadata.width(), metadata.height());
+        matrices.blit(texture, x, y, (frame / rows) * metadata.frameWidth(), (frame % rows) * metadata.frameHeight(), width, height, metadata.width(), metadata.height());
 
         RenderSystem.disableDepthTest();
         RenderSystem.disableBlend();

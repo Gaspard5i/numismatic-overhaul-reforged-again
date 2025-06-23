@@ -9,6 +9,8 @@ import com.nyfaria.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import com.nyfaria.numismaticoverhaul.villagers.json.VillagerJsonHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
@@ -54,13 +56,13 @@ public class SellTagAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            final var entries = Registry.ITEM.getTag(TagKey.create(Registry.ITEM_REGISTRY, sellTag))
+            final var entries = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, sellTag))
                     .orElse(null);
 
             if (entries == null) {
                 NumismaticOverhaul.LOGGER.warn("Could not generate trade for tag '" + sellTag + "', as it does not exist");
 
-                final var player = entity.level.getNearestPlayer(entity, 15);
+                final var player = entity.level().getNearestPlayer(entity, 15);
                 if (player != null) {
                     player.displayClientMessage(TextOps.withColor("numismatic §> there has been a problem generating trades, check the log for details",
                             Currency.GOLD.getNameColor(), TextOps.color(ChatFormatting.GRAY)), false);

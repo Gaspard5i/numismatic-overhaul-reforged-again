@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.OwoUIAdapter;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.UIErrorToast;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -86,7 +87,7 @@ public abstract class BaseOwoScreen<R extends ParentComponent> extends Screen {
                 this.build(this.uiAdapter.rootComponent);
 
                 this.uiAdapter.inflateAndMount();
-                this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+               // this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
             } catch (Exception error) {
                 //Owo.LOGGER.warn("Could not initialize owo screen", error);
                 UIErrorToast.report(error);
@@ -96,7 +97,7 @@ public abstract class BaseOwoScreen<R extends ParentComponent> extends Screen {
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         if (!this.invalid) {
             super.render(matrices, mouseX, mouseY, delta);
         } else {
@@ -128,6 +129,6 @@ public abstract class BaseOwoScreen<R extends ParentComponent> extends Screen {
     @Override
     public void removed() {
         if (this.uiAdapter != null) this.uiAdapter.dispose();
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+       // this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
     }
 }

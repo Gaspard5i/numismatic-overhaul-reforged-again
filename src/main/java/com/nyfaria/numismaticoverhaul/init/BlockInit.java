@@ -6,6 +6,7 @@ import com.nyfaria.numismaticoverhaul.block.PiggyBankBlockEntity;
 import com.nyfaria.numismaticoverhaul.block.ShopBlock;
 import com.nyfaria.numismaticoverhaul.block.ShopBlockEntity;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -29,7 +30,7 @@ public class BlockInit {
     public static final RegistryObject<BlockEntityType<ShopBlockEntity>> SHOP_BE = BLOCK_ENTITIES.register("shop", () -> BlockEntityType.Builder.of(ShopBlockEntity::new, SHOP.get(), INEXHAUSTIBLE_SHOP.get()).build(null));
 
     protected static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {
-        return registerBlock(name, block, b -> () -> new BlockItem(b.get(), ItemInit.getItemProperties()));
+        return registerBlock(name, block, b -> () -> new BlockItem(b.get(), new Item.Properties()));
     }
     protected static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block, Function<RegistryObject<T>, Supplier<? extends BlockItem>> item) {
         var reg = BLOCKS.register(name, block);

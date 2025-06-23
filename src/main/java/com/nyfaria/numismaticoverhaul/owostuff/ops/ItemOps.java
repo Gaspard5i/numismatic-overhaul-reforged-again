@@ -21,7 +21,7 @@ public class ItemOps {
      * @return {@code true} if addition can stack onto base
      */
     public static boolean canStack(ItemStack base, ItemStack addition) {
-        return base.isEmpty() || (canIncreaseBy(base, addition.getCount()) && ItemStack.isSameIgnoreDurability(base, addition) && ItemStack.tagMatches(base, addition));
+        return base.isEmpty() || (canIncreaseBy(base, addition.getCount()) && ItemStack.isSameItem(base, addition) && ItemStack.isSameItemSameTags(base, addition));
     }
 
     /**

@@ -1,64 +1,88 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.util;
 
+import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.ScreenInvoker;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.core.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.network.chat.Style;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2d;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * An extension of vanilla's {@link GuiComponent} with all methods
- * statically accessible as well as extra convenience methods
- */
-public class Drawer extends GuiComponent {
+public class Drawer extends GuiGraphics {
 
-    private static boolean recording = false;
-
-    private static final Drawer INSTANCE = new Drawer();
-    private final DebugDrawer debug = new DebugDrawer();
-
+    @Deprecated
     public static final ResourceLocation PANEL_TEXTURE = new ResourceLocation("owo", "textures/gui/panel.png");
+    @Deprecated
     public static final ResourceLocation DARK_PANEL_TEXTURE = new ResourceLocation("owo", "textures/gui/dark_panel.png");
+    @Deprecated
+    public static final ResourceLocation PANEL_INSET_TEXTURE = new ResourceLocation("owo", "textures/gui/panel_inset.png");
 
-    private Drawer() {}
+    public static final ResourceLocation PANEL_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/default");
+    public static final ResourceLocation DARK_PANEL_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/dark");
+    public static final ResourceLocation PANEL_INSET_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/inset");
+    public static final NinePatchRenderer LIGHT_PANEL = new NinePatchRenderer(DARK_PANEL_NINE_PATCH_TEXTURE, Size.square(5), Size.square(16), false);
+    public static final NinePatchRenderer DARK_PANEL = new NinePatchRenderer(PANEL_INSET_NINE_PATCH_TEXTURE, Size.square(5), Size.square(16), false);
+    private boolean recording = false;
+
+    private Drawer(Minecraft client, MultiBufferSource.BufferSource vertexConsumers) {
+        super(client, vertexConsumers);
+    }
+
+    public static Drawer of(GuiGraphics context) {
+        return new Drawer(Minecraft.getInstance(), context.bufferSource());
+    }
+
+    public static UtilityScreen utilityScreen() {
+        return UtilityScreen.get();
+    }
+
+    public void recordQuads() {
+        recording = true;
+    }
+
+    public boolean recording() {
+        return recording;
+    }
+
+    public void submitQuads() {
+        recording = false;
+        Tesselator.getInstance().end();
+    }
 
     /**
      * Draw the outline of a rectangle
      *
-     * @param matrices The transformation matrix stack
-     * @param x        The x-coordinate of top-left corner of the rectangle
-     * @param y        The y-coordinate of top-left corner of the rectangle
-     * @param width    The width of the rectangle
-     * @param height   The height of the rectangle
-     * @param color    The color of the rectangle
+     * @param x      The x-coordinate of top-left corner of the rectangle
+     * @param y      The y-coordinate of top-left corner of the rectangle
+     * @param width  The width of the rectangle
+     * @param height The height of the rectangle
+     * @param color  The color of the rectangle
      */
-    public static void drawRectOutline(PoseStack matrices, int x, int y, int width, int height, int color) {
-        fill(matrices, x, y, x + width, y + 1, color);
-        fill(matrices, x, y + height - 1, x + width, y + height, color);
+    public void drawRectOutline(int x, int y, int width, int height, int color) {
+        this.fill(x, y, x + width, y + 1, color);
+        this.fill(x, y + height - 1, x + width, y + height, color);
 
-        fill(matrices, x, y + 1, x + 1, y + height - 1, color);
-        fill(matrices, x + width - 1, y + 1, x + width, y + height - 1, color);
+        this.fill(x, y + 1, x + 1, y + height - 1, color);
+        this.fill(x + width - 1, y + 1, x + width, y + height - 1, color);
     }
 
     /**
      * Draw a filled rectangle with a gradient
      *
-     * @param matrices         The transformation matrix stack
      * @param x                The x-coordinate of top-left corner of the rectangle
      * @param y                The y-coordinate of top-left corner of the rectangle
      * @param width            The width of the rectangle
@@ -68,9 +92,9 @@ public class Drawer extends GuiComponent {
      * @param bottomRightColor The color at the rectangle's bottom right corner
      * @param bottomLeftColor  The color at the rectangle's bottom left corner
      */
-    public static void drawGradientRect(PoseStack matrices, int x, int y, int width, int height, int topLeftColor, int topRightColor, int bottomRightColor, int bottomLeftColor) {
+    public void drawGradientRect(int x, int y, int width, int height, int topLeftColor, int topRightColor, int bottomRightColor, int bottomLeftColor) {
         var buffer = Tesselator.getInstance().getBuilder();
-        var matrix = matrices.last().pose();
+        var matrix = this.pose().last().pose();
 
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         buffer.vertex(matrix, x + width, y, 0).color(topRightColor).endVertex();
@@ -78,7 +102,6 @@ public class Drawer extends GuiComponent {
         buffer.vertex(matrix, x, y + height, 0).color(bottomLeftColor).endVertex();
         buffer.vertex(matrix, x + width, y + height, 0).color(bottomRightColor).endVertex();
 
-        RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -86,33 +109,31 @@ public class Drawer extends GuiComponent {
         Tesselator.getInstance().end();
 
         RenderSystem.disableBlend();
-        RenderSystem.enableTexture();
     }
 
     /**
      * Draw a panel that looks like the background of a vanilla
      * inventory screen
      *
-     * @param matrices The transformation matrix stack
-     * @param x        The x-coordinate of top-left corner of the panel
-     * @param y        The y-coordinate of top-left corner of the panel
-     * @param width    The width of the panel
-     * @param height   The height of the panel
-     * @param dark     Whether to use the dark version of the panel texture
+     * @param x      The x-coordinate of top-left corner of the panel
+     * @param y      The y-coordinate of top-left corner of the panel
+     * @param width  The width of the panel
+     * @param height The height of the panel
+     * @param dark   Whether to use the dark version of the panel texture
      */
-    public static void drawPanel(PoseStack matrices, int x, int y, int width, int height, boolean dark) {
-        (dark ? OwoNinePatchRenderers.DARK_PANEL : OwoNinePatchRenderers.LIGHT_PANEL).draw(matrices, x, y, width, height);
+    public void drawPanel(int x, int y, int width, int height, boolean dark) {
+        (dark ? DARK_PANEL : LIGHT_PANEL).draw(this, x, y, width, height);
     }
 
-    public static void drawText(PoseStack matrices, net.minecraft.network.chat.Component text, float x, float y, float scale, int color) {
-        drawText(matrices, text, x, y, scale, color, TextAnchor.TOP_LEFT);
+    public void drawText(Component text, float x, float y, float scale, int color) {
+        drawText(text, x, y, scale, color, TextAnchor.TOP_LEFT);
     }
 
-    public static void drawText(PoseStack matrices, net.minecraft.network.chat.Component text, float x, float y, float scale, int color, TextAnchor anchorPoint) {
+    public void drawText(Component text, float x, float y, float scale, int color, TextAnchor anchorPoint) {
         final var textRenderer = Minecraft.getInstance().font;
 
-        matrices.pushPose();
-        matrices.scale(scale, scale, 1);
+        this.pose().pushPose();
+        this.pose().scale(scale, scale, 1);
 
         switch (anchorPoint) {
             case TOP_RIGHT -> x -= textRenderer.width(text) * scale;
@@ -123,131 +144,187 @@ public class Drawer extends GuiComponent {
             }
         }
 
-        textRenderer.draw(matrices, text, x * (1 / scale), y * (1 / scale), color);
-        matrices.popPose();
-    }
 
-    public static void drawTooltip(PoseStack matrices, int x, int y, List<ClientTooltipComponent> tooltip) {
-        ((ScreenInvoker) utilityScreen()).owo$renderTooltipFromComponents(matrices, tooltip, x, y);
-    }
-
-    public static UtilityScreen utilityScreen() {
-        return UtilityScreen.get();
-    }
-
-    public static DebugDrawer debug() {
-        return INSTANCE.debug;
-    }
-
-    public static void recordQuads() {
-        recording = true;
-    }
-
-    public static boolean recording() {
-        return recording;
-    }
-
-    public static void submitQuads() {
-        recording = false;
-        Tesselator.getInstance().end();
+        this.drawString(textRenderer, text, (int) (x * (1 / scale)), (int) (y * (1 / scale)), color, false);
+        this.pose().popPose();
     }
 
     public enum TextAnchor {
         TOP_RIGHT, BOTTOM_RIGHT, TOP_LEFT, BOTTOM_LEFT
     }
 
-    public static class DebugDrawer {
+    public void drawLine(int x1, int y1, int x2, int y2, double thiccness, Color color) {
+        var offset = new Vector2d(x2 - x1, y2 - y1).perpendicular().normalize().mul(thiccness * .5d);
 
-        private DebugDrawer() {}
+        var buffer = Tesselator.getInstance().getBuilder();
+        var matrix = this.pose().last().pose();
+        int vColor = color.argb();
 
-        /**
-         * Draw the area around the given rectangle which
-         * the given insets describe
-         *
-         * @param matrices The transformation matrix stack
-         * @param x        The x-coordinate of top-left corner of the rectangle
-         * @param y        The y-coordinate of top-left corner of the rectangle
-         * @param width    The width of the rectangle
-         * @param height   The height of the rectangle
-         * @param insets   The insets to draw around the rectangle
-         * @param color    The color to draw the inset area with
-         */
-        public void drawInsets(PoseStack matrices, int x, int y, int width, int height, Insets insets, int color) {
-            fill(matrices, x - insets.left(), y - insets.top(), x + width + insets.right(), y, color);
-            fill(matrices, x - insets.left(), y + height, x + width + insets.right(), y + height + insets.bottom(), color);
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-            fill(matrices, x - insets.left(), y, x, y + height, color);
-            fill(matrices, x + width, y, x + width + insets.right(), y + height, color);
+        buffer.vertex(matrix, (float) (x1 + offset.x), (float) (y1 + offset.y), 0).color(vColor).endVertex();
+        buffer.vertex(matrix, (float) (x1 - offset.x), (float) (y1 - offset.y), 0).color(vColor).endVertex();
+        buffer.vertex(matrix, (float) (x2 - offset.x), (float) (y2 - offset.y), 0).color(vColor).endVertex();
+        buffer.vertex(matrix, (float) (x2 + offset.x), (float) (y2 + offset.y), 0).color(vColor).endVertex();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        Tesselator.getInstance().end();
+    }
+
+    public void drawCircle(int centerX, int centerY, int segments, double radius, Color color) {
+        drawCircle(centerX, centerY, 0, 360, segments, radius, color);
+    }
+
+    public void drawCircle(int centerX, int centerY, double angleFrom, double angleTo, int segments, double radius, Color color) {
+        Preconditions.checkArgument(angleFrom < angleTo, "angleFrom must be less than angleTo");
+
+        var buffer = Tesselator.getInstance().getBuilder();
+        var matrix = this.pose().last().pose();
+
+        double angleStep = Math.toRadians(angleTo - angleFrom) / segments;
+        int vColor = color.argb();
+
+        buffer.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.vertex(matrix, centerX, centerY, 0).color(vColor).endVertex();
+
+        for (int i = segments; i >= 0; i--) {
+            double theta = Math.toRadians(angleFrom) + i * angleStep;
+            buffer.vertex(matrix, (float) (centerX - Math.cos(theta) * radius), (float) (centerY - Math.sin(theta) * radius), 0)
+                    .color(vColor).endVertex();
         }
 
-        /**
-         * Draw the element inspector for the given tree, detailing the position,
-         * bounding box, margins and padding of each component
-         *
-         * @param matrices    The transformation matrix stack
-         * @param root        The root component of the hierarchy to draw
-         * @param mouseX      The x-coordinate of the mouse pointer
-         * @param mouseY      The y-coordinate of the mouse pointer
-         * @param onlyHovered Whether to only draw the inspector for the hovered widget
-         */
-        public void drawInspector(PoseStack matrices, ParentComponent root, double mouseX, double mouseY, boolean onlyHovered) {
-            RenderSystem.disableDepthTest();
-            var client = Minecraft.getInstance();
-            var textRenderer = client.font;
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            var children = new ArrayList<ModComponent>();
-            if (!onlyHovered) {
-                root.collectChildren(children);
-            } else if (root.childAt((int) mouseX, (int) mouseY) != null) {
-                children.add(root.childAt((int) mouseX, (int) mouseY));
+        Tesselator.getInstance().end();
+    }
+
+    public void drawRing(int centerX, int centerY, int segments, double innerRadius, double outerRadius, Color innerColor, Color outerColor) {
+        drawRing(centerX, centerY, 0d, 360d, segments, innerRadius, outerRadius, innerColor, outerColor);
+    }
+
+    public void drawRing(int centerX, int centerY, double angleFrom, double angleTo, int segments, double innerRadius, double outerRadius, Color innerColor, Color outerColor) {
+        Preconditions.checkArgument(angleFrom < angleTo, "angleFrom must be less than angleTo");
+        Preconditions.checkArgument(innerRadius < outerRadius, "innerRadius must be less than outerRadius");
+
+        var buffer = Tesselator.getInstance().getBuilder();
+        var matrix = this.pose().last().pose();
+
+        double angleStep = Math.toRadians(angleTo - angleFrom) / segments;
+        int inColor = innerColor.argb();
+        int outColor = outerColor.argb();
+
+        buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+
+        for (int i = 0; i <= segments; i++) {
+            double theta = Math.toRadians(angleFrom) + i * angleStep;
+
+            buffer.vertex(matrix, (float) (centerX - Math.cos(theta) * outerRadius), (float) (centerY - Math.sin(theta) * outerRadius), 0)
+                    .color(outColor).endVertex();
+            buffer.vertex(matrix, (float) (centerX - Math.cos(theta) * innerRadius), (float) (centerY - Math.sin(theta) * innerRadius), 0)
+                    .color(inColor).endVertex();
+        }
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        Tesselator.getInstance().end();
+    }
+
+    public void drawTooltip(Font textRenderer, int x, int y, List<ClientTooltipComponent> components) {
+        ((ScreenInvoker) this).owo$renderTooltipFromComponents(textRenderer, components, x, y, DefaultTooltipPositioner.INSTANCE);
+    }
+
+    // --- debug rendering ---
+
+    /**
+     * Draw the area around the given rectangle which
+     * the given insets describe
+     *
+     * @param x      The x-coordinate of top-left corner of the rectangle
+     * @param y      The y-coordinate of top-left corner of the rectangle
+     * @param width  The width of the rectangle
+     * @param height The height of the rectangle
+     * @param insets The insets to draw around the rectangle
+     * @param color  The color to draw the inset area with
+     */
+    public void drawInsets(int x, int y, int width, int height, Insets insets, int color) {
+        this.fill(x - insets.left(), y - insets.top(), x + width + insets.right(), y, color);
+        this.fill(x - insets.left(), y + height, x + width + insets.right(), y + height + insets.bottom(), color);
+
+        this.fill(x - insets.left(), y, x, y + height, color);
+        this.fill(x + width, y, x + width + insets.right(), y + height, color);
+    }
+
+    /**
+     * Draw the element inspector for the given tree, detailing the position,
+     * bounding box, margins and padding of each component
+     *
+     * @param root        The root component of the hierarchy to draw
+     * @param mouseX      The x-coordinate of the mouse pointer
+     * @param mouseY      The y-coordinate of the mouse pointer
+     * @param onlyHovered Whether to only draw the inspector for the hovered widget
+     */
+    public void drawInspector(ParentComponent root, double mouseX, double mouseY, boolean onlyHovered) {
+        RenderSystem.disableDepthTest();
+        var client = Minecraft.getInstance();
+        var textRenderer = client.font;
+
+        var children = new ArrayList<ModComponent>();
+        if (!onlyHovered) {
+            root.collectChildren(children);
+        } else if (root.childAt((int) mouseX, (int) mouseY) != null) {
+            children.add(root.childAt((int) mouseX, (int) mouseY));
+        }
+
+        for (var child : children) {
+            if (child instanceof ParentComponent parentComponent) {
+                this.drawInsets(parentComponent.x(), parentComponent.y(), parentComponent.width(),
+                        parentComponent.height(), parentComponent.padding().get().inverted(), 0xA70CECDD);
             }
 
-            for (var child : children) {
-                if (child instanceof ParentComponent parentComponent) {
-                    this.drawInsets(matrices, parentComponent.x(), parentComponent.y(), parentComponent.width(),
-                            parentComponent.height(), parentComponent.padding().get().inverted(), 0xA70CECDD);
-                }
+            final var margins = child.margins().get();
+            this.drawInsets(child.x(), child.y(), child.width(), child.height(), margins, 0xA7FFF338);
+            drawRectOutline(child.x(), child.y(), child.width(), child.height(), 0xFF3AB0FF);
 
-                final var margins = child.margins().get();
-                this.drawInsets(matrices, child.x(), child.y(), child.width(), child.height(), margins, 0xA7FFF338);
-                drawRectOutline(matrices, child.x(), child.y(), child.width(), child.height(), 0xFF3AB0FF);
+            if (onlyHovered) {
 
-                if (onlyHovered) {
+                int inspectorX = child.x() + 1;
+                int inspectorY = child.y() + child.height() + child.margins().get().bottom() + 1;
+                int inspectorHeight = textRenderer.lineHeight * 2 + 4;
 
-                    int inspectorX = child.x() + 1;
-                    int inspectorY = child.y() + child.height() + child.margins().get().bottom() + 1;
-                    int inspectorHeight = textRenderer.lineHeight * 2 + 4;
-
-                    if (inspectorY > client.getWindow().getGuiScaledHeight() - inspectorHeight) {
-                        inspectorY -= child.fullSize().height() + inspectorHeight + 1;
-                        if (inspectorY < 0) inspectorY = 1;
-                        if (child instanceof ParentComponent parentComponent) {
-                            inspectorX += parentComponent.padding().get().left();
-                            inspectorY += parentComponent.padding().get().top();
-                        }
-                    }
-
-                    final var nameText = net.minecraft.network.chat.Component.nullToEmpty(child.getClass().getSimpleName() + (child.id() != null ? " '" + child.id() + "'" : ""));
-                    final var descriptor = net.minecraft.network.chat.Component.literal(child.x() + "," + child.y() + " (" + child.width() + "," + child.height() + ")"
-                            + " <" + margins.top() + "," + margins.bottom() + "," + margins.left() + "," + margins.right() + "> ");
+                if (inspectorY > client.getWindow().getGuiScaledHeight() - inspectorHeight) {
+                    inspectorY -= child.fullSize().height() + inspectorHeight + 1;
+                    if (inspectorY < 0) inspectorY = 1;
                     if (child instanceof ParentComponent parentComponent) {
-                        var padding = parentComponent.padding().get();
-                        descriptor.append(" >" + padding.top() + "," + padding.bottom() + "," + padding.left() + "," + padding.right() + "<");
+                        inspectorX += parentComponent.padding().get().left();
+                        inspectorY += parentComponent.padding().get().top();
                     }
-
-                    int width = Math.max(textRenderer.width(nameText), textRenderer.width(descriptor));
-                    fill(matrices, inspectorX, inspectorY, inspectorX + width + 3, inspectorY + inspectorHeight, 0xA7000000);
-                    drawRectOutline(matrices, inspectorX, inspectorY, width + 3, inspectorHeight, 0xA7000000);
-
-                    textRenderer.draw(matrices, nameText,
-                            inspectorX + 2, inspectorY + 2, 0xFFFFFF);
-                    textRenderer.draw(matrices, descriptor,
-                            inspectorX + 2, inspectorY + textRenderer.lineHeight + 2, 0xFFFFFF);
                 }
-            }
 
-            RenderSystem.enableDepthTest();
+                final var nameText = Component.nullToEmpty(child.getClass().getSimpleName() + (child.id() != null ? " '" + child.id() + "'" : ""));
+                final var descriptor = Component.literal(child.x() + "," + child.y() + " (" + child.width() + "," + child.height() + ")"
+                        + " <" + margins.top() + "," + margins.bottom() + "," + margins.left() + "," + margins.right() + "> ");
+                if (child instanceof ParentComponent parentComponent) {
+                    var padding = parentComponent.padding().get();
+                    descriptor.append(" >" + padding.top() + "," + padding.bottom() + "," + padding.left() + "," + padding.right() + "<");
+                }
+
+                int width = Math.max(textRenderer.width(nameText), textRenderer.width(descriptor));
+                fill(inspectorX, inspectorY, inspectorX + width + 3, inspectorY + inspectorHeight, 0xA7000000);
+                drawRectOutline(inspectorX, inspectorY, width + 3, inspectorHeight, 0xA7000000);
+
+                this.drawString(textRenderer, nameText, inspectorX + 2, inspectorY + 2, 0xFFFFFF, false);
+                this.drawString(textRenderer, descriptor, inspectorX + 2, inspectorY + textRenderer.lineHeight + 2, 0xFFFFFF, false);
+            }
         }
+
+        RenderSystem.enableDepthTest();
     }
 
     public static class UtilityScreen extends Screen {
@@ -255,12 +332,7 @@ public class Drawer extends GuiComponent {
         private static UtilityScreen INSTANCE;
 
         private UtilityScreen() {
-            super(net.minecraft.network.chat.Component.empty());
-        }
-
-        @Override
-        public void renderComponentHoverEffect(PoseStack matrices, @Nullable Style style, int x, int y) {
-            super.renderComponentHoverEffect(matrices, style, x, y);
+            super(Component.empty());
         }
 
         public static UtilityScreen get() {
@@ -279,10 +351,10 @@ public class Drawer extends GuiComponent {
         }
 
         static {
-//            WindowResizeCallback.EVENT.register((client, window) -> {
-//                if (INSTANCE == null) return;
-//                INSTANCE.init(client, window.getGuiScaledWidth(), window.getGuiScaledHeight());
-//            });
+         /*   WindowResizeCallback.EVENT.register((client, window) -> {
+                if (INSTANCE == null) return;
+                INSTANCE.init(client, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            });*/
         }
     }
 

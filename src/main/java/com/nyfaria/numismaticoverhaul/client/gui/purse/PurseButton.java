@@ -6,6 +6,7 @@ import com.nyfaria.numismaticoverhaul.cap.CurrencyHolderAttacher;
 import com.nyfaria.numismaticoverhaul.client.gui.CurrencyTooltipRenderer;
 import com.nyfaria.numismaticoverhaul.currency.Currency;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -33,11 +34,13 @@ public class PurseButton extends ImageButton {
     }
 
     @Override
-    public void renderToolTip(PoseStack matrices, int mouseX, int mouseY) {
-        CurrencyTooltipRenderer.renderTooltip(
-                currencyStorage.getValue(),
-                matrices, parent,
-                TOOLTIP_TITLE,
-                x + 14, y + 5);
+    public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        if (this.isHovered())
+            CurrencyTooltipRenderer.renderTooltip(
+                    currencyStorage.getValue(),
+                    pGuiGraphics, parent,
+                    TOOLTIP_TITLE,
+                    this.getX() + 14, this.getY() + 5);
     }
 }

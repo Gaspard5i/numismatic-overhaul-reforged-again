@@ -21,6 +21,7 @@ import com.nyfaria.numismaticoverhaul.villagers.json.adapters.SellStackAdapter;
 import com.nyfaria.numismaticoverhaul.villagers.json.adapters.SellSusStewAdapter;
 import com.nyfaria.numismaticoverhaul.villagers.json.adapters.SellTagAdapter;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -88,7 +89,7 @@ public class VillagerTradesHandler {
             if (professionId.getPath().equals("wandering_trader")) {
                 deserializeTrades(jsonRoot, NumismaticVillagerTradesRegistry::registerWanderingTraderTrade);
             } else {
-                VillagerProfession profession = Registry.VILLAGER_PROFESSION.getOptional(professionId).orElseThrow(() -> new DeserializationException("Invalid profession"));
+                VillagerProfession profession = BuiltInRegistries.VILLAGER_PROFESSION.getOptional(professionId).orElseThrow(() -> new DeserializationException("Invalid profession"));
                 deserializeTrades(jsonRoot, (integer, factory) -> NumismaticVillagerTradesRegistry.registerVillagerTrade(profession, integer, factory));
             }
         } catch (DeserializationException e) {

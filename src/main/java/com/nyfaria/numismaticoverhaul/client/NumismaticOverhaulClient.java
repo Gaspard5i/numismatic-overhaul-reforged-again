@@ -27,8 +27,9 @@ public class NumismaticOverhaulClient {
 
     @SubscribeEvent
     public static void onInitializeClient(FMLClientSetupEvent event) {
-        MenuScreens.register(MenuInit.SHOP.get(), ShopScreen::new);
-        MenuScreens.register(MenuInit.PIGGY_BANK.get(), PiggyBankScreen::new);
+
+        event.enqueueWork(() -> MenuScreens.register(MenuInit.SHOP.get(), ShopScreen::new));
+        event.enqueueWork(() -> MenuScreens.register(MenuInit.PIGGY_BANK.get(), PiggyBankScreen::new));
 
         ItemProperties.register(ItemInit.BRONZE_COIN.get(), new ResourceLocation("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
         ItemProperties.register(ItemInit.SILVER_COIN.get(), new ResourceLocation("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);

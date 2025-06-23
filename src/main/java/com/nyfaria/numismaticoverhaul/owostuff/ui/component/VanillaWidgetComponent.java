@@ -1,11 +1,11 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.ClickableWidgetAccessor;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -79,15 +79,15 @@ public class VanillaWidgetComponent extends BaseComponent {
     }
 
     private void applyToWidget() {
-        this.widget.x = this.x;
-        this.widget.y = this.y;
+        ((ClickableWidgetAccessor) this.widget).owo$setX(this.x());
+        ((ClickableWidgetAccessor) this.widget).owo$setY(this.y());
 
         this.widget.setWidth(this.width);
         ((ClickableWidgetAccessor) this.widget).owo$setHeight(this.height);
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.widget.render(matrices, mouseX, mouseY, 0);
     }
 

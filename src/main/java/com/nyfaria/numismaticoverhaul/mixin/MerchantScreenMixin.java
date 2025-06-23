@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.item.CurrencyItem;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.network.chat.Component;
@@ -23,9 +24,9 @@ public abstract class MerchantScreenMixin extends Screen {
     private ItemStack numismatic$originalFirstBuyItem;
 
     @Inject(method = "renderAndDecorateCostA", at = @At("HEAD"))
-    private void captureFirstBuyItem(PoseStack matrices, ItemStack adjustedFirstBuyItem, ItemStack originalFirstBuyItem, int x, int y, CallbackInfo ci) {
-        this.numismatic$originalFirstBuyItem = originalFirstBuyItem;
-        this.numismatic$adjustedFirstBuyItem = adjustedFirstBuyItem;
+    private void captureFirstBuyItem(GuiGraphics pGuiGraphics, ItemStack pRealCost, ItemStack pBaseCost, int pX, int pY, CallbackInfo ci) {
+        this.numismatic$originalFirstBuyItem = pBaseCost;
+        this.numismatic$adjustedFirstBuyItem = pRealCost;
     }
 
     @ModifyVariable(method = "renderAndDecorateCostA", at = @At("HEAD"), argsOnly = true, ordinal = 1)

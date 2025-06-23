@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -47,7 +46,7 @@ public class ShopBlock extends BaseEntityBlock {
     private final boolean inexhaustible;
 
     public ShopBlock(boolean inexhaustible) {
-        super(BlockBehaviour.Properties.of(Material.STONE).noOcclusion().destroyTime(5.0f));
+        super(BlockBehaviour.Properties.of().noOcclusion().destroyTime(5.0f));
         this.inexhaustible = inexhaustible;
     }
 

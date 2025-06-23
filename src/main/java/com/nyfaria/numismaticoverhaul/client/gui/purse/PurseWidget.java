@@ -10,13 +10,14 @@ import com.nyfaria.numismaticoverhaul.currency.CurrencyResolver;
 import com.nyfaria.numismaticoverhaul.network.NetworkHandler;
 import com.nyfaria.numismaticoverhaul.network.RequestPurseActionC2SPacket;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -24,9 +25,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PurseWidget extends GuiComponent implements Widget, GuiEventListener, NarratableEntry {
+public class PurseWidget extends GuiGraphics implements Renderable, GuiEventListener, NarratableEntry {
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID,"textures/gui/purse_widget.png");
+    public static final ResourceLocation TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID, "textures/gui/purse_widget.png");
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -39,7 +40,8 @@ public class PurseWidget extends GuiComponent implements Widget, GuiEventListene
     private final MutableInt bronzeAmount = new MutableInt(0);
     private final CurrencyHolder currencyStorage;
 
-    public PurseWidget(int x, int y, Minecraft client, CurrencyHolder currencyStorage) {
+    public PurseWidget(int x, int y, Minecraft client, CurrencyHolder currencyStorage, MultiBufferSource.BufferSource pBufferSource) {
+        super(client, pBufferSource);
         this.client = client;
         this.x = x;
         this.y = y;
@@ -66,21 +68,20 @@ public class PurseWidget extends GuiComponent implements Widget, GuiEventListene
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         if (!active) return;
 
         //Draw over items in the crafting interface
         RenderSystem.disableDepthTest();
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        blit(matrices, x, y, 0, 0, 37, 60);
+        blit(TEXTURE, x, y, 0, 0, 37, 60);
 
         for (Button button : buttons) {
             button.render(matrices, mouseX, mouseY, delta);
         }
 
-        client.font.draw(matrices, Component.literal("" + goldAmount), x + 5, y + 12, 16777215);
-        client.font.draw(matrices, Component.literal("" + silverAmount), x + 5, y + 24, 16777215);
-        client.font.draw(matrices, Component.literal("" + bronzeAmount), x + 5, y + 36, 16777215);
+        matrices.drawString(client.font, Component.literal("" + goldAmount), x + 5, y + 12, 16777215);
+        matrices.drawString(client.font, Component.literal("" + silverAmount), x + 5, y + 24, 16777215);
+        matrices.drawString(client.font, Component.literal("" + bronzeAmount), x + 5, y + 36, 16777215);
     }
 
     @Override
@@ -98,6 +99,16 @@ public class PurseWidget extends GuiComponent implements Widget, GuiEventListene
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         return mouseX >= x && mouseX <= x + 37 && mouseY >= y && mouseY <= y + 57 && active;
+    }
+
+    @Override
+    public void setFocused(boolean pFocused) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
     }
 
     public void toggleActive() {

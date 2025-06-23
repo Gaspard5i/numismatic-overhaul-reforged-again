@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.base;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.SlotAccessor;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.OwoUIAdapter;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
@@ -10,6 +9,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.inject.GreedyInputComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.UIErrorToast;
 import com.nyfaria.numismaticoverhaul.owostuff.util.pond.OwoSlotExtension;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -81,7 +81,7 @@ public abstract class BaseOwoHandledScreen<R extends ParentComponent, S extends 
                 this.build(this.uiAdapter.rootComponent);
 
                 this.uiAdapter.inflateAndMount();
-                this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+       //         this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
             } catch (Exception error) {
 //                //Owo.LOGGER.warn("Could not initialize owo screen", error);
                 UIErrorToast.report(error);
@@ -150,28 +150,28 @@ public abstract class BaseOwoHandledScreen<R extends ParentComponent, S extends 
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         if (!this.invalid) {
             super.render(matrices, mouseX, mouseY, delta);
 
             if (this.uiAdapter.enableInspector) {
-                matrices.translate(0, 0, 500);
+                matrices.pose().translate(0, 0, 500);
 
                 for (int i = 0; i < this.menu.slots.size(); i++) {
                     var slot = this.menu.slots.get(i);
                     if (!slot.isActive()) continue;
 
-                    Drawer.drawText(matrices, Component.literal(String.valueOf(i)),
+                    ((Drawer)matrices).drawText(Component.literal(String.valueOf(i)),
                             this.leftPos + slot.x + 15, this.topPos + slot.y + 9, .5f, 0x0096FF,
                             Drawer.TextAnchor.BOTTOM_RIGHT
                     );
-                    Drawer.drawText(matrices, Component.literal("(" + slot.getContainerSlot() + ")"),
+                    ((Drawer)matrices).drawText(Component.literal("(" + slot.getContainerSlot() + ")"),
                             this.leftPos + slot.x + 15, this.topPos + slot.y + 15, .5f, 0x5800FF,
                             Drawer.TextAnchor.BOTTOM_RIGHT
                     );
                 }
 
-                matrices.translate(0, 0, -500);
+                matrices.pose().translate(0, 0, -500);
             }
 
             this.renderTooltip(matrices, mouseX, mouseY);
@@ -206,12 +206,9 @@ public abstract class BaseOwoHandledScreen<R extends ParentComponent, S extends 
     @Override
     public void removed() {
         if (this.uiAdapter != null) this.uiAdapter.dispose();
-        this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+      //  this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
         super.removed();
     }
-
-    @Override
-    protected void renderBg(PoseStack matrices, float delta, int mouseX, int mouseY) {}
 
     public class SlotComponent extends BaseComponent {
 
@@ -223,7 +220,7 @@ public abstract class BaseOwoHandledScreen<R extends ParentComponent, S extends 
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
             this.didDraw = true;
 
             int[] scissor = new int[4];
@@ -244,7 +241,7 @@ public abstract class BaseOwoHandledScreen<R extends ParentComponent, S extends 
         }
 
         @Override
-        public void drawTooltip(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        public void drawTooltip(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
             if (!this.slot.hasItem()) {
                 super.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
             }

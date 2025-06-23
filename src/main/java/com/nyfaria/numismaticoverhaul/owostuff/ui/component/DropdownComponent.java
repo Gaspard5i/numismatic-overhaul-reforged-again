@@ -1,18 +1,11 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.FlowLayout;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.HorizontalFlowLayout;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.VerticalFlowLayout;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Color;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.PositionedRectangle;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.core.*;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
@@ -41,7 +34,7 @@ public class DropdownComponent extends HorizontalFlowLayout {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         super.draw(matrices, mouseX, mouseY, partialTicks, delta);
         if (this.requiresHover && !this.isInBoundingBox(mouseX, mouseY)) {
             this.queue(() -> {
@@ -89,9 +82,9 @@ public class DropdownComponent extends HorizontalFlowLayout {
         return super.removeChild(child);
     }
 
-    protected static void drawIconFromTexture(PoseStack matrices, ParentComponent dropdown, int y, int u, int v) {
+    protected static void drawIconFromTexture(Drawer matrices, ParentComponent dropdown, int y, int u, int v) {
         RenderSystem.setShaderTexture(0, ICONS_TEXTURE);
-        Drawer.blit(matrices,
+        matrices.blit(ICONS_TEXTURE,
                 dropdown.x() + dropdown.width() - dropdown.padding().get().right() - 10,
                 y,
                 u, v,
@@ -158,9 +151,9 @@ public class DropdownComponent extends HorizontalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-            Drawer.fill(matrices, this.x, this.y, this.x + this.width, this.y + this.height, 0x77000000);
-            Drawer.drawRectOutline(matrices, this.x, this.y, this.width, this.height, 0x77FFFFFF);
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+            matrices.fill(this.x, this.y, this.x + this.width, this.y + this.height, 0x77000000);
+            matrices.drawRectOutline(this.x, this.y, this.width, this.height, 0x77FFFFFF);
             super.draw(matrices, mouseX, mouseY, partialTicks, delta);
         }
     }
@@ -173,8 +166,8 @@ public class DropdownComponent extends HorizontalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-            Drawer.fill(matrices,
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+            matrices.fill(
                     this.x - 1,
                     this.y + this.height / 2,
                     this.x + this.parent.width() - this.parent.padding().get().horizontal() + 1,
@@ -204,7 +197,7 @@ public class DropdownComponent extends HorizontalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
             super.draw(matrices, mouseX, mouseY, partialTicks, delta);
             drawIconFromTexture(matrices, this.parent, this.y, 0, 16);
 
@@ -239,10 +232,10 @@ public class DropdownComponent extends HorizontalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
             if (this.isInBoundingBox(mouseX, mouseY)) {
                 var margins = this.margins.get();
-                Drawer.fill(matrices,
+                matrices.fill(
                         this.x - margins.top(),
                         this.y - 1,
                         this.x + this.parent.width() - this.parent.padding().get().horizontal() + 1,
@@ -274,7 +267,7 @@ public class DropdownComponent extends HorizontalFlowLayout {
         }
 
         @Override
-        public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
             super.draw(matrices, mouseX, mouseY, partialTicks, delta);
             drawIconFromTexture(matrices, this.parent, this.y, this.state ? 16 : 0, 0);
         }

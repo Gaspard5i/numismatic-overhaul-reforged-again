@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.client.gui.purse;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.resources.ResourceLocation;
 
@@ -27,7 +28,8 @@ public class AlwaysOnTopTexturedButtonWidget extends ImageButton {
     }
 
     @Override
-    public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         RenderSystem.setShaderTexture(0, texture);
         int i = this.v;
         if (this.isHoveredOrFocused()) {
@@ -36,7 +38,6 @@ public class AlwaysOnTopTexturedButtonWidget extends ImageButton {
 
         RenderSystem.disableDepthTest();
 
-        blit(matrices, this.x, this.y, this.u, i, this.width, this.height);
-        if (this.isHoveredOrFocused()) this.renderToolTip(matrices, mouseX, mouseY);
+        pGuiGraphics.blit(texture, this.getX(), this.getY(), this.u, i, this.width, this.height);
     }
 }

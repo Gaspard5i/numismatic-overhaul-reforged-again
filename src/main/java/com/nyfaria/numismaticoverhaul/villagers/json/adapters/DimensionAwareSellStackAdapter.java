@@ -48,7 +48,7 @@ public class DimensionAwareSellStackAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            if (!entity.level.dimension().location().toString().equals(targetDimensionId)) return null;
+            if (!entity.level().dimension().location().toString().equals(targetDimensionId)) return null;
 
             return new MerchantOffer(CurrencyHelper.getClosest(price), sell, this.maxUses, this.experience, multiplier);
         }

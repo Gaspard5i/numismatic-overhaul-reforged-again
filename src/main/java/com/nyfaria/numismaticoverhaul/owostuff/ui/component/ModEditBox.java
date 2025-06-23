@@ -21,6 +21,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseScroll;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseUp;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.util.EventSource;
 import net.minecraft.client.gui.Font;
@@ -158,7 +159,7 @@ public class ModEditBox extends EditBox implements ModComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.owo$getWrapper().draw(matrices, mouseX, mouseY, partialTicks, delta);
     }
 

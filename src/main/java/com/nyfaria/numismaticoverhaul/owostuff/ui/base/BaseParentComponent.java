@@ -11,9 +11,11 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Size;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Surface;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.VerticalAlignment;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.ScissorStack;
 import com.nyfaria.numismaticoverhaul.owostuff.util.Observable;
+import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -72,9 +74,11 @@ public abstract class BaseParentComponent extends BaseComponent implements Paren
     protected void parentUpdate(float delta, int mouseX, int mouseY) {}
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.surface.draw(matrices, this);
     }
+
+
 
     @Override
     public void queue(Runnable task) {
@@ -340,23 +344,23 @@ public abstract class BaseParentComponent extends BaseComponent implements Paren
      *
      * @param children The list of children to draw
      */
-    protected void drawChildren(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta, List<ModComponent> children) {
+    protected void drawChildren(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta, List<ModComponent> children) {
         if (!this.allowOverflow) {
             var padding = this.padding.get();
-            ScissorStack.push(this.x + padding.left(), this.y + padding.top(), this.width - padding.horizontal(), this.height - padding.vertical(), matrices);
+            ScissorStack.push(this.x + padding.left(), this.y + padding.top(), this.width - padding.horizontal(), this.height - padding.vertical(), matrices.pose());
         }
 
         var focusHandler = this.focusHandler();
         for (var child : children) {
-            if (!ScissorStack.isVisible(child, matrices)) continue;
-            matrices.translate(0, 0, child.zIndex());
+            if (!ScissorStack.isVisible(child, matrices.pose())) continue;
+            matrices.pose().translate(0, 0, child.zIndex());
 
             child.draw(matrices, mouseX, mouseY, partialTicks, delta);
             if (focusHandler.lastFocusSource() == FocusSource.KEYBOARD_CYCLE && focusHandler.focused() == child) {
                 child.drawFocusHighlight(matrices, mouseX, mouseY, partialTicks, delta);
             }
 
-            matrices.translate(0, 0, -child.zIndex());
+            matrices.pose().translate(0, 0, -child.zIndex());
         }
 
         if (!this.allowOverflow) {

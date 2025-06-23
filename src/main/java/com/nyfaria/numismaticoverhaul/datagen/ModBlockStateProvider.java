@@ -9,7 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import static com.nyfaria.numismaticoverhaul.NumismaticOverhaul.MODID;
 
-public class ModBlockStateProvider extends BlockStateProvider {
+/*public class ModBlockStateProvider extends BlockStateProvider {
     public ModBlockStateProvider(DataGenerator generator, ExistingFileHelper existingFileHelper) {
         super(generator, MODID, existingFileHelper);
     }
@@ -42,4 +42,4 @@ public class ModBlockStateProvider extends BlockStateProvider {
     protected String getName(Block item) {
         return ForgeRegistries.BLOCKS.getKey(item).getPath();
     }
-}
+}*/

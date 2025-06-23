@@ -32,23 +32,23 @@ public class BoxComponent extends BaseComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         final int startColor = this.startColor.get().argb();
         final int endColor = this.endColor.get().argb();
 
         if (this.fill) {
             switch (this.direction) {
-                case TOP_TO_BOTTOM -> Drawer.drawGradientRect(matrices, this.x, this.y, this.width, this.height,
+                case TOP_TO_BOTTOM -> matrices.drawGradientRect(this.x, this.y, this.width, this.height,
                         startColor, startColor, endColor, endColor);
-                case RIGHT_TO_LEFT -> Drawer.drawGradientRect(matrices, this.x, this.y, this.width, this.height,
+                case RIGHT_TO_LEFT -> matrices.drawGradientRect(this.x, this.y, this.width, this.height,
                         endColor, startColor, startColor, endColor);
-                case BOTTOM_TO_TOP -> Drawer.drawGradientRect(matrices, this.x, this.y, this.width, this.height,
+                case BOTTOM_TO_TOP -> matrices.drawGradientRect(this.x, this.y, this.width, this.height,
                         endColor, endColor, startColor, startColor);
-                case LEFT_TO_RIGHT -> Drawer.drawGradientRect(matrices, this.x, this.y, this.width, this.height,
+                case LEFT_TO_RIGHT -> matrices.drawGradientRect(this.x, this.y, this.width, this.height,
                         startColor, endColor, endColor, startColor);
             }
         } else {
-            Drawer.drawRectOutline(matrices, this.x, this.y, this.width, this.height, startColor);
+            matrices.drawGradientRect(this.x, this.y, this.width, this.height, startColor, endColor, endColor, startColor);
         }
     }
 

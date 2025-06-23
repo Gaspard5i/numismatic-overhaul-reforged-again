@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.owostuff.registration.reflect;
 
 import com.nyfaria.numismaticoverhaul.owostuff.registration.annotations.AssignedName;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -17,7 +18,7 @@ public interface BlockRegistryContainer extends AutoRegistryContainer<Block> {
 
     @Override
     default Registry<Block> getRegistry() {
-        return Registry.BLOCK;
+        return BuiltInRegistries.BLOCK;
     }
 
     @Override
@@ -28,7 +29,7 @@ public interface BlockRegistryContainer extends AutoRegistryContainer<Block> {
     @Override
     default void postProcessField(String namespace, Block value, String identifier, Field field) {
         if (field.isAnnotationPresent(NoBlockItem.class)) return;
-        Registry.register(Registry.ITEM, new ResourceLocation(namespace, identifier), createBlockItem(value, identifier));
+        Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(namespace, identifier), createBlockItem(value, identifier));
     }
 
     /**

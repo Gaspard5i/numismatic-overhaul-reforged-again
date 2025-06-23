@@ -38,7 +38,6 @@
     "owomixins.ui.ChatScreenMixin",
     "owomixins.ui.CheckboxWidgetAccessor",
     "owomixins.ui.ClickableWidgetAccessor",
-    "owomixins.ui.ClickableWidgetMixin",
     "owomixins.ui.DrawableHelperMixin",
     "owomixins.ui.RenderSystemMixin",
     "owomixins.ui.ScreenInvoker",

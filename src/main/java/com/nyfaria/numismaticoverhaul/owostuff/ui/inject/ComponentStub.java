@@ -19,6 +19,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseEnter;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseLeave;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseScroll;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseUp;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.util.EventSource;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -34,7 +35,7 @@ import java.util.List;
 public interface ComponentStub extends ModComponent {
 
     @Override
-    default void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    default void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         throw new IllegalStateException("Interface stub method called");
     }
 

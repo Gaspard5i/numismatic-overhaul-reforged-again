@@ -1,10 +1,9 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.core;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.component.ModEditBox;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.IncompatibleUIModelException;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.ScissorStack;
 import net.minecraft.client.gui.components.AbstractWidget;
 import org.jetbrains.annotations.NotNull;
@@ -125,20 +124,20 @@ public interface ParentComponent extends ModComponent {
     ParentComponent removeChild(ModComponent child);
 
     @Override
-    default void drawTooltip(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    default void drawTooltip(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         ModComponent.super.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
 
         if (!this.allowOverflow()) {
             var padding = this.padding().get();
-            ScissorStack.push(this.x() + padding.left(), this.y() + padding.top(), this.width() - padding.horizontal(), this.height() - padding.vertical(), matrices);
+            ScissorStack.push(this.x() + padding.left(), this.y() + padding.top(), this.width() - padding.horizontal(), this.height() - padding.vertical(), matrices.pose());
         }
 
         for (var child : this.children()) {
-            if (!ScissorStack.isVisible(mouseX, mouseY, matrices)) continue;
+            if (!ScissorStack.isVisible(mouseX, mouseY, matrices.pose())) continue;
 
-            matrices.translate(0, 0, child.zIndex());
+            matrices.pose().translate(0, 0, child.zIndex());
             child.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
-            matrices.translate(0, 0, -child.zIndex());
+            matrices.pose().translate(0, 0, -child.zIndex());
         }
 
         if (!this.allowOverflow()) {

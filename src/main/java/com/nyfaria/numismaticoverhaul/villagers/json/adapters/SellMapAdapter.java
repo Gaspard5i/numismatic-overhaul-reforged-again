@@ -6,8 +6,11 @@ import com.nyfaria.numismaticoverhaul.currency.CurrencyHelper;
 import com.nyfaria.numismaticoverhaul.owostuff.util.RegistryAccess;
 import com.nyfaria.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import com.nyfaria.numismaticoverhaul.villagers.json.VillagerJsonHelper;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.jetbrains.annotations.NotNull;
@@ -59,10 +63,10 @@ public class SellMapAdapter extends TradeJsonAdapter {
 
         @Nullable
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            if (!(entity.level instanceof ServerLevel serverWorld)) return null;
+            if (!(entity.level() instanceof ServerLevel serverWorld)) return null;
 
-            final var registry = serverWorld.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY);
-            final var feature = RegistryAccess.getEntry(registry, this.structureId);
+            final var registry = serverWorld.registryAccess().registryOrThrow(Registries.STRUCTURE);
+            final Holder<Structure> feature = RegistryAccess.getEntry(registry, this.structureId);
 
             if (feature == null || feature.unwrapKey().isEmpty()) {
                 NumismaticOverhaul.LOGGER.error("Tried to create map to invalid structure " + this.structureId);

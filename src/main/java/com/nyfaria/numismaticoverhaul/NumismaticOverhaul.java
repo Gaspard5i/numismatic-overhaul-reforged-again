@@ -5,12 +5,6 @@ import com.nyfaria.numismaticoverhaul.cap.CurrencyHolderAttacher;
 import com.nyfaria.numismaticoverhaul.config.ExampleClientConfig;
 import com.nyfaria.numismaticoverhaul.config.ExampleConfig;
 import com.nyfaria.numismaticoverhaul.currency.MoneyBagLootEntry;
-import com.nyfaria.numismaticoverhaul.datagen.ModBlockStateProvider;
-import com.nyfaria.numismaticoverhaul.datagen.ModItemModelProvider;
-import com.nyfaria.numismaticoverhaul.datagen.ModLangProvider;
-import com.nyfaria.numismaticoverhaul.datagen.ModLootTableProvider;
-import com.nyfaria.numismaticoverhaul.datagen.ModRecipeProvider;
-import com.nyfaria.numismaticoverhaul.datagen.ModSoundProvider;
 import com.nyfaria.numismaticoverhaul.init.BlockInit;
 import com.nyfaria.numismaticoverhaul.init.EntityInit;
 import com.nyfaria.numismaticoverhaul.init.ItemInit;
@@ -46,12 +40,6 @@ public class NumismaticOverhaul {
     public static final String MODID = "numismaticoverhaul";
     public static final Logger LOGGER = LogManager.getLogger();
     public static final LootPoolEntryType MONEY_BAG_ENTRY = new LootPoolEntryType(new MoneyBagLootEntry.Serializer());
-    public static final CreativeModeTab NUMISMATIC_GROUP = new CreativeModeTab(MODID) {
-        @Override
-        public ItemStack makeIcon() {
-            return MoneyBagItem.createCombined(new long[]{0,1,0});
-        }
-    };
     public static final GameRules.Key<GameRules.IntegerValue> MONEY_DROP_PERCENTAGE
             = GameRules.register("moneyDropPercentage", GameRules.Category.PLAYER, GameRules.IntegerValue.create(10));
 
@@ -63,6 +51,7 @@ public class NumismaticOverhaul {
         EntityInit.ENTITIES.register(bus);
         BlockInit.BLOCKS.register(bus);
         BlockInit.BLOCK_ENTITIES.register(bus);
+        NMCreativeTabs.TABS.register(bus);
         CurrencyHolderAttacher.register();
         MenuInit.MENU_TYPES.register(bus);
         VillagerTradesHandler.registerDefaultAdapters();
@@ -77,12 +66,12 @@ public class NumismaticOverhaul {
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-        generator.addProvider(event.includeServer(), new ModRecipeProvider(generator));
-        generator.addProvider(event.includeServer(), new ModLootTableProvider(generator));
-        generator.addProvider(event.includeServer(), new ModSoundProvider(generator, MODID, existingFileHelper));
-        generator.addProvider(event.includeClient(), new ModItemModelProvider(generator, existingFileHelper));
-        generator.addProvider(event.includeClient(), new ModBlockStateProvider(generator, existingFileHelper));
-        generator.addProvider(event.includeClient(), new ModLangProvider(generator, MODID, "en_us"));
+     //   generator.addProvider(event.includeServer(), new ModRecipeProvider(generator));
+    //    generator.addProvider(event.includeServer(), new ModLootTableProvider(generator));
+     //   generator.addProvider(event.includeServer(), new ModSoundProvider(generator, MODID, existingFileHelper));
+    //    generator.addProvider(event.includeClient(), new ModItemModelProvider(generator, existingFileHelper));
+      //  generator.addProvider(event.includeClient(), new ModBlockStateProvider(generator, existingFileHelper));
+     //   generator.addProvider(event.includeClient(), new ModLangProvider(generator, MODID, "en_us"));
     }
 
     public static final Component PREFIX = Component.empty().withStyle(ChatFormatting.GRAY)

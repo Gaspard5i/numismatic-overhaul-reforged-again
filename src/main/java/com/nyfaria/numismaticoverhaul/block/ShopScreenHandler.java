@@ -46,7 +46,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         this.shopInventory = shopInventory;
         this.owner = playerInventory.player;
 
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             this.shop = (ShopBlockEntity) shopInventory;
             this.offers = shop.getOffers();
             updateClient();
@@ -79,7 +79,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     private void onBufferChanged(Container inventory) {
-        if (this.owner.level.isClientSide && Minecraft.getInstance().screen instanceof ShopScreen screen) {
+        if (this.owner.level().isClientSide && Minecraft.getInstance().screen instanceof ShopScreen screen) {
             screen.afterDataUpdate();
         }
     }
@@ -90,7 +90,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     public void loadOffer(long index) {
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             if (index > this.offers.size() - 1) {
                 NumismaticOverhaul.LOGGER.error("Player {} attempted to load invalid trade at index {}", owner.getName(), index);
                 return;
@@ -103,7 +103,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     public void createOffer(long price) {
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             final var stack = bufferInventory.getItem(0);
             if (stack.isEmpty()) return;
 
@@ -115,7 +115,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     public void extractCurrency() {
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             CurrencyHolderAttacher.getExampleHolderUnwrap(owner).modify(shop.getStoredCurrency());
             this.shop.setStoredCurrency(0);
             this.updateClient();
@@ -125,7 +125,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     public void deleteOffer() {
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             this.shop.deleteOffer(bufferInventory.getItem(0));
             this.updateClient();
         } else {
@@ -134,7 +134,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     }
 
     public void toggleTransfer() {
-        if (!this.owner.level.isClientSide) {
+        if (!this.owner.level().isClientSide) {
             this.shop.toggleTransfer();
             this.updateClient();
         } else {

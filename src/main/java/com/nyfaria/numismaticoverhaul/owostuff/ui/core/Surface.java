@@ -12,45 +12,45 @@ import org.w3c.dom.Node;
 public interface Surface {
 
     Surface PANEL = (matrices, component) -> {
-        Drawer.drawPanel(matrices, component.x(), component.y(), component.width(), component.height(), false);
+       matrices.drawPanel(component.x(), component.y(), component.width(), component.height(), false);
     };
 
     Surface DARK_PANEL = (matrices, component) -> {
-        Drawer.drawPanel(matrices, component.x(), component.y(), component.width(), component.height(), true);
+        matrices.drawPanel(component.x(), component.y(), component.width(), component.height(), true);
     };
 
     Surface VANILLA_TRANSLUCENT = (matrices, component) -> {
-        Drawer.drawGradientRect(matrices,
+        matrices.drawGradientRect(
                 component.x(), component.y(), component.width(), component.height(),
                 0xC0101010, 0xC0101010, 0xD0101010, 0xD0101010
         );
     };
 
     Surface OPTIONS_BACKGROUND = (matrices, component) -> {
-        RenderSystem.setShaderTexture(0, Drawer.BACKGROUND_LOCATION);
+        RenderSystem.setShaderTexture(0, Drawer.PANEL_INSET_TEXTURE);
         RenderSystem.setShaderColor(64 / 255f, 64 / 255f, 64 / 255f, 1);
-        Drawer.blit(matrices, component.x(), component.y(), 0, 0, component.width(), component.height(), 32, 32);
+        matrices.blit(Drawer.PANEL_INSET_TEXTURE, component.x(), component.y(), 0, 0, component.width(), component.height(), 32, 32);
         RenderSystem.setShaderColor(1, 1, 1, 1);
     };
 
     Surface BLANK = (matrices, component) -> {};
 
     static Surface flat(int color) {
-        return (matrices, component) -> Drawer.fill(matrices, component.x(), component.y(), component.x() + component.width(), component.y() + component.height(), color);
+        return (matrices, component) -> matrices.fill(component.x(), component.y(), component.x() + component.width(), component.y() + component.height(), color);
     }
 
     static Surface outline(int color) {
-        return (matrices, component) -> Drawer.drawRectOutline(matrices, component.x(), component.y(), component.width(), component.height(), color);
+        return (matrices, component) -> matrices.drawRectOutline(component.x(), component.y(), component.width(), component.height(), color);
     }
 
     static Surface tiled(ResourceLocation texture, int textureWidth, int textureHeight) {
         return (matrices, component) -> {
             RenderSystem.setShaderTexture(0, texture);
-            Drawer.blit(matrices, component.x(), component.y(), 0, 0, component.width(), component.height(), textureWidth, textureHeight);
+            matrices.blit(texture, component.x(), component.y(), 0, 0, component.width(), component.height(), textureWidth, textureHeight);
         };
     }
 
-    void draw(PoseStack matrices, ParentComponent component);
+    void draw(Drawer matrices, ParentComponent component);
 
     default Surface and(Surface surface) {
         return (matrices, component) -> {

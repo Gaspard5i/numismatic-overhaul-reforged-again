@@ -39,7 +39,7 @@ public interface ModComponent extends PositionedRectangle {
      * @param partialTicks The fraction of the current tick that has passed
      * @param delta        The duration of the last frame, in partial ticks
      */
-    void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta);
+    void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta);
 
     /**
      * Draw the current tooltip of this component onto the screen
@@ -50,9 +50,9 @@ public interface ModComponent extends PositionedRectangle {
      * @param partialTicks The fraction of the current tick that has passed
      * @param delta        The duration of the last frame, in partial ticks
      */
-    default void drawTooltip(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    default void drawTooltip(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         if (!this.shouldDrawTooltip(mouseX, mouseY)) return;
-        Drawer.drawTooltip(matrices, mouseX, mouseY, this.tooltip());
+        matrices.drawTooltip(Minecraft.getInstance().font, mouseX, mouseY, this.tooltip());
     }
 
     /**
@@ -65,8 +65,8 @@ public interface ModComponent extends PositionedRectangle {
      * @param partialTicks The fraction of the current tick that has passed
      * @param delta        The duration of the last frame, in partial ticks
      */
-    default void drawFocusHighlight(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-        Drawer.drawRectOutline(matrices, this.x(), this.y(), this.width(), this.height(), 0xFFFFFFFF);
+    default void drawFocusHighlight(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        matrices.drawRectOutline(this.x(), this.y(), this.width(), this.height(), 0xFFFFFFFF);
     }
 
     /**

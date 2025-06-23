@@ -41,7 +41,7 @@ public class WorldOps {
      * @param category The category for the sound
      */
     public static void playSound(Level world, Vec3 pos, SoundEvent sound, SoundSource category) {
-        playSound(world, new BlockPos(pos), sound, category, 1, 1);
+        playSound(world, new BlockPos((int) pos.x, (int) pos.y, (int) pos.z), sound, category, 1, 1);
     }
 
     public static void playSound(Level world, BlockPos pos, SoundEvent sound, SoundSource category) {
@@ -60,7 +60,7 @@ public class WorldOps {
      * @param pitch    The pitch, or speed, to play the sound at
      */
     public static void playSound(Level world, Vec3 pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
-        world.playSound(null, new BlockPos(pos), sound, category, volume, pitch);
+        world.playSound(null, new BlockPos((int) pos.x, (int) pos.y, (int) pos.z), sound, category, volume, pitch);
     }
 
     public static void playSound(Level world, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {

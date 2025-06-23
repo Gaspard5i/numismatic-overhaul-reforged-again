@@ -8,6 +8,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.component.TextureComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.container.FlowLayout;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -30,11 +31,15 @@ public class PiggyBankScreen extends BaseUIModelHandledScreen<FlowLayout, PiggyB
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float delta) {
         super.render(matrices, mouseX, mouseY, delta);
-
         this.bronzeHint.sizing(this.menu.getSlot(0).hasItem() ? Sizing.fixed(0) : Sizing.fixed(16));
         this.silverHint.sizing(this.menu.getSlot(1).hasItem() ? Sizing.fixed(0) : Sizing.fixed(16));
         this.goldHint.sizing(this.menu.getSlot(2).hasItem() ? Sizing.fixed(0) : Sizing.fixed(16));
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
+
     }
 }

@@ -1,26 +1,10 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Positioning;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Size;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.CharTyped;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.FocusGained;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.FocusLost;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.KeyPress;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseDown;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseDrag;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseEnter;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseLeave;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseScroll;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.event.MouseUp;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.core.*;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.event.*;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.util.EventSource;
 import com.nyfaria.numismaticoverhaul.owostuff.util.Observable;
@@ -249,7 +233,7 @@ public class SliderComponent extends AbstractSliderButton implements ModComponen
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.owo$getWrapper().draw(matrices, mouseX, mouseY, partialTicks, delta);
     }
 

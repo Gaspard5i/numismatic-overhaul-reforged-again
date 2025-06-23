@@ -26,7 +26,7 @@ public class CoinItem extends Item implements CurrencyItem {
     public final Style NAME_STYLE;
 
     public CoinItem(Currency currency) {
-        super(new Properties().tab(NumismaticOverhaul.NUMISMATIC_GROUP).stacksTo(99));
+        super(new Properties().stacksTo(99));
         this.currency = currency;
         this.NAME_STYLE = Style.EMPTY.withColor(TextColor.fromRgb(currency.getNameColor()));
     }

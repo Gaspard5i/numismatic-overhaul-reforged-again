@@ -1,13 +1,14 @@
 package com.nyfaria.numismaticoverhaul.owostuff.registration.reflect;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 
 public interface EntityRegistryContainer extends AutoRegistryContainer<EntityType<?>> {
 
     @Override
     default Registry<EntityType<?>> getRegistry() {
-        return Registry.ENTITY_TYPE;
+        return BuiltInRegistries.ENTITY_TYPE;
     }
 
     @Override

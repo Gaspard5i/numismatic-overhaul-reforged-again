@@ -3,20 +3,23 @@ package com.nyfaria.numismaticoverhaul.owostuff.ui.util;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector4f;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.PositionedRectangle;
-import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import net.minecraft.client.Minecraft;
 
-public class ScissorStack {
+public final class ScissorStack {
 
     private static final PoseStack EMPTY_STACK = new PoseStack();
     private static final Deque<PositionedRectangle> STACK = new ArrayDeque<>();
+
+    private ScissorStack() {}
 
     public static void pushDirect(int x, int y, int width, int height) {
         var window = Minecraft.getInstance().getWindow();
@@ -50,16 +53,16 @@ public class ScissorStack {
         }
 
         STACK.pop();
-
-        if (STACK.isEmpty()) {
-            var window = Minecraft.getInstance().getWindow();
-            GL11.glScissor(0, 0, window.getWidth(), window.getHeight());
-        } else {
-            applyState();
-        }
+        applyState();
     }
 
     private static void applyState() {
+        if (STACK.isEmpty()) {
+            var window = Minecraft.getInstance().getWindow();
+            GL11.glScissor(0, 0, window.getWidth(), window.getHeight());
+            return;
+        }
+
         if (!GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) return;
 
         var newFrame = STACK.peek();
@@ -82,6 +85,20 @@ public class ScissorStack {
         if (scissorEnabled) GlStateManager._enableScissorTest();
     }
 
+    public static void popFramesAndDraw(int maxPopFrames, Runnable action) {
+        var previousFrames = new ArrayList<PositionedRectangle>();
+        while (maxPopFrames > 1 && STACK.size() > 1) {
+            previousFrames.add(0, STACK.pop());
+            maxPopFrames--;
+        }
+
+        applyState();
+        action.run();
+
+        previousFrames.forEach(STACK::push);
+        applyState();
+    }
+
     public static boolean isVisible(int x, int y, @Nullable PoseStack matrices) {
         var top = STACK.peek();
         if (top == null) return true;
@@ -93,17 +110,17 @@ public class ScissorStack {
         );
     }
 
-    public static boolean isVisible(ModComponent component, @Nullable PoseStack matrices) {
+    public static boolean isVisible(ModComponent modComponent, @Nullable PoseStack matrices) {
         var top = STACK.peek();
         if (top == null) return true;
 
-        var margins = component.margins().get();
+        var margins = modComponent.margins().get();
         return top.intersects(
                 withGlTransform(
-                        component.x() - margins.left(),
-                        component.y() - margins.top(),
-                        component.width() + margins.right(),
-                        component.height() + margins.bottom(),
+                        modComponent.x() - margins.left(),
+                        modComponent.y() - margins.top(),
+                        modComponent.width() + margins.right(),
+                        modComponent.height() + margins.bottom(),
                         matrices
                 )
         );
@@ -118,14 +135,14 @@ public class ScissorStack {
         var root = new Vector4f(x, y, 0, 1);
         var end = new Vector4f(x + width, y + height, 0, 1);
 
-        root.transform(matrices.last().pose());
-        end.transform(matrices.last().pose());
+        root.mul(matrices.last().pose());
+        end.mul(matrices.last().pose());
 
-        x = (int) root.x();
-        y = (int) root.y();
+        x = (int) root.x;
+        y = (int) root.y;
 
-        width = (int) Math.ceil(end.x() - root.x());
-        height = (int) Math.ceil(end.y() - root.y());
+        width = (int) Math.ceil(end.x - root.x);
+        height = (int) Math.ceil(end.y - root.y);
 
         matrices.popPose();
 

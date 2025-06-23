@@ -138,7 +138,7 @@ public class LabelComponent extends BaseComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         int x = this.x;
         int y = this.y;
 
@@ -150,7 +150,8 @@ public class LabelComponent extends BaseComponent {
         }
 
         switch (this.verticalTextAlignment) {
-            case CENTER -> y += (this.height - ((this.wrappedText.size() * (this.textRenderer.lineHeight + 2)) - 2)) / 2;
+            case CENTER ->
+                    y += (this.height - ((this.wrappedText.size() * (this.textRenderer.lineHeight + 2)) - 2)) / 2;
             case BOTTOM -> y += this.height - ((this.wrappedText.size() * (this.textRenderer.lineHeight + 2)) - 2);
         }
 
@@ -163,20 +164,16 @@ public class LabelComponent extends BaseComponent {
                 case RIGHT -> renderX += this.width - this.textRenderer.width(renderText);
             }
 
-            if (this.shadow) {
-                this.textRenderer.drawShadow(matrices, renderText, renderX, y + i * 11, this.color.get().argb());
-            } else {
-                this.textRenderer.draw(matrices, renderText, renderX, y + i * 11, this.color.get().argb());
-            }
+            matrices.drawString(Minecraft.getInstance().font, renderText, renderX, y + i * 11, this.color.get().argb(), this.shadow);
         }
     }
 
     @Override
-    public void drawTooltip(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void drawTooltip(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         super.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
 
         if (!this.isInBoundingBox(mouseX, mouseY)) return;
-        Drawer.utilityScreen().renderComponentHoverEffect(matrices, this.text.getStyle(), mouseX, mouseY);
+        matrices.renderComponentHoverEffect(Minecraft.getInstance().font, this.text.getStyle(), mouseX, mouseY);
     }
 
     @Override

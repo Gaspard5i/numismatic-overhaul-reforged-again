@@ -6,6 +6,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.nyfaria.numismaticoverhaul.villagers.exceptions.DeserializationException;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
@@ -89,7 +91,7 @@ public class VillagerJsonHelper {
     }
 
     public static Item getItemFromID(String id) {
-        return Registry.ITEM.getOptional(ResourceLocation.tryParse(id)).orElseThrow(() -> new DeserializationException("Invalid item: \"" + id + "\""));
+        return BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(id)).orElseThrow(() -> new DeserializationException("Invalid item: \"" + id + "\""));
     }
 
     public static <T> T deepCopy(T object, Class<T> type) {

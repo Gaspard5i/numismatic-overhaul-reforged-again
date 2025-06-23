@@ -1,6 +1,6 @@
 package com.nyfaria.numismaticoverhaul.datagen;
 
-import com.google.common.collect.ImmutableList;
+/*import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.loot.LootTableProvider;
@@ -36,4 +36,4 @@ public class ModLootTableProvider extends LootTableProvider {
     protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
         map.forEach((id, table) -> LootTables.validate(validationtracker, id, table));
     }
-}
+}*/

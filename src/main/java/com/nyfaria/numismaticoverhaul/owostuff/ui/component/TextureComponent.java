@@ -53,7 +53,7 @@ public class TextureComponent extends BaseComponent {
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         RenderSystem.setShaderTexture(0, this.texture);
         RenderSystem.enableDepthTest();
 
@@ -62,16 +62,16 @@ public class TextureComponent extends BaseComponent {
             RenderSystem.defaultBlendFunc();
         }
 
-        matrices.pushPose();
-        matrices.translate(x, y, 0);
-        matrices.scale(this.width / (float) this.regionWidth, this.height / (float) this.regionHeight, 0);
+        matrices.pose().pushPose();
+        matrices.pose().translate(x, y, 0);
+        matrices.pose().scale(this.width / (float) this.regionWidth, this.height / (float) this.regionHeight, 0);
 
         var visibleArea = this.visibleArea.get();
 
         int bottomEdge = Math.min(visibleArea.y() + visibleArea.height(), regionHeight);
         int rightEdge = Math.min(visibleArea.x() + visibleArea.width(), regionWidth);
 
-        Drawer.blit(matrices,
+        matrices.blit(this.texture,
                 visibleArea.x(),
                 visibleArea.y(),
                 rightEdge - visibleArea.x(),
@@ -87,7 +87,7 @@ public class TextureComponent extends BaseComponent {
             RenderSystem.disableBlend();
         }
 
-        matrices.popPose();
+        matrices.pose().popPose();
     }
 
     public TextureComponent visibleArea(PositionedRectangle visibleArea) {

@@ -16,6 +16,6 @@ public class SoundInit {
 
 
     protected static RegistryObject<SoundEvent> registerSound(String name) {
-        return SOUNDS.register(name, () -> new SoundEvent(new ResourceLocation(NumismaticOverhaul.MODID, name)));
+        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(NumismaticOverhaul.MODID, name)));
     }
 }

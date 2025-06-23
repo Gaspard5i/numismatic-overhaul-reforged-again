@@ -1,18 +1,12 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.container;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Color;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Easing;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Size;
-import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.core.*;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModelParsingException;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.OwoNinePatchRenderers;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -90,7 +84,7 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         super.draw(matrices, mouseX, mouseY, partialTicks, delta);
 
         // Update scroll position and update child
@@ -113,15 +107,15 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
         }
 
         // Draw, adding the fractional part of the offset via matrix translation
-        matrices.pushPose();
+        matrices.pose().pushPose();
 
         double visualOffset = -(this.currentScrollPosition % 1d);
         if (visualOffset > 9999999e-7 || visualOffset < .1e-6) visualOffset = 0;
 
-        matrices.translate(this.direction.choose(visualOffset, 0), this.direction.choose(0, visualOffset), 0);
+        matrices.pose().translate(this.direction.choose(visualOffset, 0), this.direction.choose(0, visualOffset), 0);
         this.drawChildren(matrices, mouseX, mouseY, partialTicks, delta, Collections.singletonList(this.child));
 
-        matrices.popPose();
+        matrices.pose().popPose();
 
         // -----
 
@@ -179,7 +173,8 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
 
     @Override
     public boolean onMouseScroll(double mouseX, double mouseY, double amount) {
-        if (this.child.onMouseScroll(this.x + mouseX - this.child.x(), this.y + mouseY - this.child.y(), amount)) return true;
+        if (this.child.onMouseScroll(this.x + mouseX - this.child.x(), this.y + mouseY - this.child.y(), amount))
+            return true;
 
         if (this.scrollStep < 1) {
             this.scrollBy(-amount * 15, false, true);
@@ -202,7 +197,8 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
 
     @Override
     public boolean onMouseDrag(double mouseX, double mouseY, double deltaX, double deltaY, int button) {
-        if (!this.scrollbaring && !this.isInScrollbar(this.x + mouseX, this.y + mouseY)) return super.onMouseDrag(mouseX, mouseY, deltaX, deltaY, button);
+        if (!this.scrollbaring && !this.isInScrollbar(this.x + mouseX, this.y + mouseY))
+            return super.onMouseDrag(mouseX, mouseY, deltaX, deltaY, button);
 
         double delta = this.direction.choose(deltaX, deltaY);
         double selfSize = this.direction.sizeGetter.apply(this) - this.direction.insetGetter.apply(this.padding.get());
@@ -350,7 +346,7 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
                 final var progress = Easing.SINE.apply(Mth.clamp(lastInteractTime - System.currentTimeMillis(), 0, 750) / 750f);
                 int alpha = (int) (progress * (scrollbarColor >>> 24));
 
-                GuiComponent.fill(matrices,
+                matrices.fill(
                         x, y, x + width, y + height,
                         alpha << 24 | (scrollbarColor & 0xFFFFFF)
                 );
@@ -371,24 +367,26 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
 
         static Scrollbar vanillaFlat() {
             return (matrices, x, y, width, height, trackX, trackY, trackWidth, trackHeight, lastInteractTime, direction, active) -> {
-                Drawer.fill(matrices, trackX, trackY, trackX + trackWidth, trackY + trackHeight, Color.BLACK.argb());
+                matrices.fill(trackX, trackY, trackX + trackWidth, trackY + trackHeight, Color.BLACK.argb());
                 OwoNinePatchRenderers.FLAT_VANILLA_SCROLLBAR.draw(matrices, x, y, width, height);
             };
         }
 
-        void draw(PoseStack matrixStack, int x, int y, int width, int height, int trackX, int trackY, int trackWidth, int trackHeight,
+        void draw(Drawer context, int x, int y, int width, int height, int trackX, int trackY, int trackWidth, int trackHeight,
                   long lastInteractTime, ScrollDirection direction, boolean active);
 
         static Scrollbar parse(Element element) {
             var children = UIParsing.<Element>allChildrenOfType(element, Node.ELEMENT_NODE);
-            if (children.size() > 1) throw new UIModelParsingException("'scrollbar' declaration may only contain a single child");
+            if (children.size() > 1)
+                throw new UIModelParsingException("'scrollbar' declaration may only contain a single child");
 
             var scrollbarElement = children.get(0);
             return switch (scrollbarElement.getNodeName()) {
                 case "vanilla" -> vanilla();
                 case "vanilla-flat" -> vanillaFlat();
                 case "flat" -> flat(Color.parse(scrollbarElement));
-                default -> throw new UIModelParsingException("Unknown scrollbar type '" + scrollbarElement.getNodeName() + "'");
+                default ->
+                        throw new UIModelParsingException("Unknown scrollbar type '" + scrollbarElement.getNodeName() + "'");
             };
         }
     }

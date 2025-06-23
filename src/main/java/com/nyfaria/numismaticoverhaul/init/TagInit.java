@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.init;
 
 import com.nyfaria.numismaticoverhaul.NumismaticOverhaul;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -24,6 +25,6 @@ public class TagInit {
         return ItemTags.create(new ResourceLocation(NumismaticOverhaul.MODID, path));
     }
     public static TagKey<EntityType<?>> entityTag(String path) {
-        return TagKey.create(Registry.ENTITY_TYPE_REGISTRY,new ResourceLocation(NumismaticOverhaul.MODID, path));
+        return TagKey.create(Registries.ENTITY_TYPE,new ResourceLocation(NumismaticOverhaul.MODID, path));
     }
 }

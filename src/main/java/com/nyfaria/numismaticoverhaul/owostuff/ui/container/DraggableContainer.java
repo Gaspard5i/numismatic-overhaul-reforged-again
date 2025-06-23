@@ -7,6 +7,8 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
+import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
+import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
@@ -27,18 +29,18 @@ public class DraggableContainer<C extends ModComponent> extends WrappingParentCo
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-        if (this.alwaysOnTop) matrices.translate(0, 0, 500);
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        if (this.alwaysOnTop) matrices.pose().translate(0, 0, 500);
         super.draw(matrices, mouseX, mouseY, partialTicks, delta);
         this.drawChildren(matrices, mouseX, mouseY, partialTicks, delta, Collections.singletonList(this.child));
-        if (this.alwaysOnTop) matrices.translate(0, 0, -500);
+        if (this.alwaysOnTop)  matrices.pose().translate(0, 0, -500);
     }
 
     @Override
-    public void drawTooltip(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-        if (this.alwaysOnTop) matrices.translate(0, 0, 500);
+    public void drawTooltip(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+        if (this.alwaysOnTop) matrices.pose().translate(0, 0, 500);
         super.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
-        if (this.alwaysOnTop) matrices.translate(0, 0, -500);
+        if (this.alwaysOnTop) matrices.pose().translate(0, 0, -500);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.nyfaria.numismaticoverhaul.mixin.owomixins.ui.ClickableWidgetAccessor;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Color;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
@@ -30,9 +31,12 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.OwoNinePatchRenderers;
 import com.nyfaria.numismaticoverhaul.owostuff.util.EventSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -47,29 +51,34 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
 
     protected Renderer renderer = Renderer.VANILLA;
     protected boolean textShadow = true;
- 
+
     protected VanillaWidgetComponent owo$wrapper = null;
 
- 
+
     protected CursorStyle preferredCursorStyle = CursorStyle.POINTER;
+
     protected ButtonComponent(Component message, Consumer<ButtonComponent> onPress) {
-        super(0, 0, 0, 0, message, button -> onPress.accept((ButtonComponent) button));
+        super(0, 0, 0, 0, message, button -> onPress.accept((ButtonComponent) button), Button.DEFAULT_NARRATION);
     }
 
+
     @Override
-    public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderer.draw(matrices, this, delta);
+    protected void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+        super.renderWidget(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+        this.renderer.draw((Drawer) pGuiGraphics, this, pPartialTick);
 
         var textRenderer = Minecraft.getInstance().font;
         int color = this.active ? 0xffffff : 0xa0a0a0;
 
         if (this.textShadow) {
-            Drawer.drawCenteredString(matrices, textRenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, color);
+            pGuiGraphics.drawCenteredString(textRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, color);
         } else {
-            textRenderer.draw(matrices, this.getMessage(), this.x + this.width / 2f - textRenderer.width(this.getMessage()) / 2f, this.y + (this.height - 8) / 2f, color);
+            pGuiGraphics.drawString(textRenderer, this.getMessage().toString(), (int) (this.getX() + this.width / 2f - textRenderer.width(this.getMessage()) / 2f), (int) (this.getY() + (this.height - 8) / 2f), color);
         }
 
-        if (this.isHovered) this.renderToolTip(matrices, mouseX, mouseY);
+        Tooltip tooltip = ((ClickableWidgetAccessor) this).owo$getTooltip();
+        if (this.isHovered() && tooltip != null)
+            pGuiGraphics.renderTooltip(textRenderer, tooltip.toCharSequence(Minecraft.getInstance()), DefaultTooltipPositioner.INSTANCE, pMouseX, pMouseY);
     }
 
     public ButtonComponent onPress(Consumer<ButtonComponent> onPress) {
@@ -112,12 +121,12 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
         Renderer VANILLA = (matrices, button, delta) -> {
             if (button.active) {
                 if (button.isHovered) {
-                    OwoNinePatchRenderers.HOVERED_BUTTON.draw(matrices, button.x, button.y, button.width, button.height);
+                    OwoNinePatchRenderers.HOVERED_BUTTON.draw(matrices, button.getX(), button.getY(), button.width, button.height);
                 } else {
-                    OwoNinePatchRenderers.ACTIVE_BUTTON.draw(matrices, button.x, button.y, button.width, button.height);
+                    OwoNinePatchRenderers.ACTIVE_BUTTON.draw(matrices, button.getX(), button.getY(), button.width, button.height);
                 }
             } else {
-                OwoNinePatchRenderers.BUTTON_DISABLED.draw(matrices, button.x, button.y, button.width, button.height);
+                OwoNinePatchRenderers.BUTTON_DISABLED.draw(matrices, button.getX(), button.getY(), button.width, button.height);
             }
         };
 
@@ -125,12 +134,12 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
             return (matrices, button, delta) -> {
                 if (button.active) {
                     if (button.isHovered) {
-                        Drawer.fill(matrices, button.x, button.y, button.x + button.width, button.y + button.height, hoveredColor);
+                        matrices.fill(button.getX(), button.getY(), button.getX() + button.width, button.getY() + button.height, hoveredColor);
                     } else {
-                        Drawer.fill(matrices, button.x, button.y, button.x + button.width, button.y + button.height, color);
+                        matrices.fill(button.getX(), button.getY(), button.getX() + button.width, button.getY() + button.height, color);
                     }
                 } else {
-                    Drawer.fill(matrices, button.x, button.y, button.x + button.width, button.y + button.height, disabledColor);
+                    matrices.fill(button.getX(), button.getY(), button.getX() + button.width, button.getY() + button.height, disabledColor);
                 }
             };
         }
@@ -146,15 +155,16 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
 
                 RenderSystem.enableDepthTest();
                 RenderSystem.setShaderTexture(0, texture);
-                Drawer.blit(matrices, button.x, button.y, u, renderV, button.width, button.height, textureWidth, textureHeight);
+                matrices.blit(texture, button.getX(), button.getY(), u, renderV, button.width, button.height, textureWidth, textureHeight);
             };
         }
 
-        void draw(PoseStack matrices, ButtonComponent button, float delta);
+        void draw(Drawer matrices, ButtonComponent button, float delta);
 
         static Renderer parse(Element element) {
             var children = UIParsing.<Element>allChildrenOfType(element, Node.ELEMENT_NODE);
-            if (children.size() > 1) throw new UIModelParsingException("'renderer' declaration may only contain a single child");
+            if (children.size() > 1)
+                throw new UIModelParsingException("'renderer' declaration may only contain a single child");
 
             var rendererElement = children.get(0);
             return switch (rendererElement.getNodeName()) {
@@ -177,7 +187,8 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
                             UIParsing.parseUnsignedInt(rendererElement.getAttributeNode("texture-height"))
                     );
                 }
-                default -> throw new UIModelParsingException("Unknown button renderer '" + rendererElement.getNodeName() + "'");
+                default ->
+                        throw new UIModelParsingException("Unknown button renderer '" + rendererElement.getNodeName() + "'");
             };
         }
     }
@@ -288,7 +299,7 @@ public class ButtonComponent extends Button implements ModComponent, ButtonWidge
     }
 
     @Override
-    public void draw(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
+    public void draw(Drawer matrices, int mouseX, int mouseY, float partialTicks, float delta) {
         this.owo$getWrapper().draw(matrices, mouseX, mouseY, partialTicks, delta);
     }
 

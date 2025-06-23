@@ -2,13 +2,12 @@ package com.nyfaria.numismaticoverhaul.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import com.nyfaria.numismaticoverhaul.currency.CurrencyConverter;
 import com.nyfaria.numismaticoverhaul.item.CurrencyTooltipData;
 import com.nyfaria.numismaticoverhaul.owostuff.ops.ItemOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -16,6 +15,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -54,26 +54,28 @@ public class CurrencyTooltipComponent implements ClientTooltipComponent {
         return widthCache;
     }
 
+
     @Override
-    public void renderText(Font textRenderer, int x, int y, Matrix4f matrix4f, MultiBufferSource.BufferSource immediate) {
+    public void renderText(Font pFont, int pMouseX, int pMouseY, Matrix4f pMatrix, MultiBufferSource.BufferSource pBufferSource) {
+        ClientTooltipComponent.super.renderText(pFont, pMouseX, pMouseY, pMatrix, pBufferSource);
         for (int i = 0; i < text.size(); i++) {
-            textRenderer.drawInBatch(text.get(i), x, y + i * 10, -1, true, matrix4f, immediate, false, 0, LightTexture.FULL_BRIGHT);
+            pFont.drawInBatch(text.get(i), pMouseX, pMouseY + i * 10, -1, true, pMatrix, pBufferSource, Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
         }
     }
 
     @Override
-    public void renderImage(Font textRenderer, int x, int y, PoseStack matrices, ItemRenderer itemRenderer, int z) {
+    public void renderImage(Font pFont, int x, int y, GuiGraphics pGuiGraphics) {
         List<ItemStack> originalCoins = data.original()[0] != -1 ? CurrencyConverter.getAsItemStackList(data.original()) : new ArrayList<>();
         List<ItemStack> coins = CurrencyConverter.getAsItemStackList(data.value());
 
         RenderSystem.setShaderTexture(0, new ResourceLocation("textures/gui/container/villager2.png"));
         for (int i = 0; i < originalCoins.size(); i++) {
-            GuiComponent.blit(matrices, x + (originalCoins.get(i).getCount() > 9 ? 14 : 11), y + 3, z, 0, 176, 9, 2, 512, 256);
-            itemRenderer.renderGuiItem(ItemOps.singleCopy(originalCoins.get(i)), x - 4, y - 5 + i * 10);
+            pGuiGraphics.blit(new ResourceLocation("textures/gui/container/villager2.png"), x + (originalCoins.get(i).getCount() > 9 ? 14 : 11), y + 3, 0, 176, 9, 2, 512, 256);
+            pGuiGraphics.renderItem(ItemOps.singleCopy(originalCoins.get(i)), x - 4, y - 5 + i * 10);
         }
 
         for (int i = 0; i < coins.size(); i++) {
-            itemRenderer.renderGuiItem(ItemOps.singleCopy(coins.get(i)), x - 4, y - 5 + i * 10 + (originalCoins.size() == 0 ? 0 : 10 + originalCoins.size() * 10));
+            pGuiGraphics.renderItem(ItemOps.singleCopy(coins.get(i)), x - 4, y - 5 + i * 10 + (originalCoins.size() == 0 ? 0 : 10 + originalCoins.size() * 10));
         }
     }
 

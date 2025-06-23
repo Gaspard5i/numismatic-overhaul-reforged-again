@@ -5,6 +5,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ops.TextOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.network.chat.Component;
@@ -58,20 +59,18 @@ public class UIErrorToast implements Toast {
     }
 
     @Override
-    public Visibility render(PoseStack matrices, ToastComponent manager, long startTime) {
-        Drawer.fill(matrices, 0, 0, this.width(), this.height(), 0x77000000);
-        Drawer.drawRectOutline(matrices, 0, 0, this.width(), this.height(), 0xA7FF0000);
+    public Visibility render(GuiGraphics pGuiGraphics, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
+        pGuiGraphics.fill(0, 0, this.width(), this.height(), 0x77000000);
+        ((Drawer)pGuiGraphics).drawRectOutline(0, 0, this.width(), this.height(), 0xA7FF0000);
 
         int xOffset = this.width() / 2 - this.textRenderer.width(this.errorMessage.get(0)) / 2;
-        this.textRenderer.drawShadow(matrices, this.errorMessage.get(0), 4 + xOffset, 4, 0xFFFFFF);
-
+        pGuiGraphics.drawString(this.textRenderer,  this.errorMessage.get(0), 4 + xOffset, 4, 0xFFFFFF, true);
         for (int i = 1; i < this.errorMessage.size(); i++) {
-            this.textRenderer.draw(matrices, this.errorMessage.get(i), 4, 4 + i * 11, 0xFFFFFF);
+            pGuiGraphics.drawString(this.textRenderer, this.errorMessage.get(i), 4, 4 + i * 11, 0xFFFFFF);
         }
 
-        return startTime > 10000 ? Visibility.HIDE : Visibility.SHOW;
+        return pTimeSinceLastVisible > 10000 ? Visibility.HIDE : Visibility.SHOW;
     }
-
 
     @Override
     public int height() {

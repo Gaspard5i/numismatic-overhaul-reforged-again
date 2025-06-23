@@ -11,7 +11,7 @@ import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class ModItemModelProvider extends ItemModelProvider {
+/*public class ModItemModelProvider extends ItemModelProvider {
     public ModItemModelProvider(DataGenerator generator, ExistingFileHelper existingFileHelper) {
         super(generator, NumismaticOverhaul.MODID, existingFileHelper);
     }
@@ -72,4 +72,4 @@ public class ModItemModelProvider extends ItemModelProvider {
         }
         return new ResourceLocation(rl.getNamespace(), folder + "/" + rl.getPath());
     }
-}
+}*/

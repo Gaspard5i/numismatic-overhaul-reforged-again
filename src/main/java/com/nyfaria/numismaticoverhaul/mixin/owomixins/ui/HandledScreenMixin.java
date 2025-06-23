@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseOwoHandledScreen;
 import com.nyfaria.numismaticoverhaul.owostuff.util.pond.OwoSlotExtension;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,20 +29,20 @@ public class HandledScreenMixin {
 
     @SuppressWarnings("ConstantConditions")
     @Inject(method = "render", at = @At("HEAD"))
-    private void captureOwoState(PoseStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void captureOwoState(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
         owo$inOwoScreen = (Object) this instanceof BaseOwoHandledScreen<?, ?>;
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void resetOwoState(PoseStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void resetOwoState(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
         owo$inOwoScreen = false;
     }
 
     @Inject(method = "renderSlot", at = @At("HEAD"))
-    private void injectSlotScissors(PoseStack matrices, Slot slot, CallbackInfo ci) {
+    private void injectSlotScissors(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
         if (!owo$inOwoScreen) return;
 
-        var scissorArea = ((OwoSlotExtension) slot).owo$getScissorArea();
+        var scissorArea = ((OwoSlotExtension) pSlot).owo$getScissorArea();
         if (scissorArea == null) return;
 
         GlStateManager._enableScissorTest();
@@ -49,26 +50,26 @@ public class HandledScreenMixin {
     }
 
     @Inject(method = "renderSlot", at = @At("RETURN"))
-    private void clearSlotScissors(PoseStack matrices, Slot slot, CallbackInfo ci) {
+    private void clearSlotScissors(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
         if (!owo$inOwoScreen) return;
 
-        var scissorArea = ((OwoSlotExtension) slot).owo$getScissorArea();
+        var scissorArea = ((OwoSlotExtension) pSlot).owo$getScissorArea();
         if (scissorArea == null) return;
 
         GlStateManager._disableScissorTest();
     }
 
-    @Inject(method = "renderSlotHighlight(Lcom/mojang/blaze3d/vertex/PoseStack;IIII)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;disableDepthTest()V", shift = At.Shift.AFTER))
-    private static void enableSlotDepth(PoseStack pPoseStack, int pX, int pY, int pBlitOffset, int slotColor, CallbackInfo ci) {
+    @Inject(method = "renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;IIII)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(Lnet/minecraft/client/renderer/RenderType;IIIIIII)V", shift = At.Shift.AFTER))
+    private static void enableSlotDepth(GuiGraphics p_283692_, int p_281453_, int p_281915_, int p_283504_, int color, CallbackInfo ci) {
         if (!owo$inOwoScreen) return;
         RenderSystem.enableDepthTest();
-        pPoseStack.translate(0, 0, 300);
+        p_283692_.pose().translate(0, 0, 300);
     }
 
-    @Inject(method = "renderSlotHighlight(Lcom/mojang/blaze3d/vertex/PoseStack;III)V", at = @At("TAIL"))
-    private static void clearSlotDepth(PoseStack matrices, int x, int y, int z, CallbackInfo ci) {
+    @Inject(method = "renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;III)V", at = @At("TAIL"))
+    private static void clearSlotDepth(GuiGraphics pGuiGraphics, int pX, int pY, int pBlitOffset, CallbackInfo ci) {
         if (!owo$inOwoScreen) return;
-        matrices.translate(0, 0, -300);
+        pGuiGraphics.pose().translate(0, 0, -300);
     }
 
     @SuppressWarnings("InvalidInjectorMethodSignature")

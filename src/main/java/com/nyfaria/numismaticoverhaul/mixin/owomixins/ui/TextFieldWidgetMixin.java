@@ -32,11 +32,6 @@ public abstract class TextFieldWidgetMixin extends AbstractWidget implements Mod
     }
 
     @Override
-    public void drawFocusHighlight(PoseStack matrices, int mouseX, int mouseY, float partialTicks, float delta) {
-        // noop, since TextFieldWidget already does this
-    }
-
-    @Override
     public void parseProperties(UIModel spec, Element element, Map<String, Element> children) {
         superparseProperties(spec, element, children);
         UIParsing.apply(children, "text", e -> e.getTextContent().strip(), text -> {
@@ -47,13 +42,8 @@ public abstract class TextFieldWidgetMixin extends AbstractWidget implements Mod
     }
 
     @SuppressWarnings("ReferenceToMixin")
-    @Inject(method = "setX", at = @At("HEAD"), cancellable = true)
-    private void applyToWrapper(int x, CallbackInfo ci) {
-        final var wrapper = ((ClickableWidgetMixin) (Object) this).owo$wrapper;
-        if (wrapper != null) {
-            wrapper.setX(x);
-            ci.cancel();
-        }
+    @Override
+    public void setX(int x) {
     }
 
     protected CursorStyle owo$preferredCursorStyle() {

@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 
 public class UISounds {
 
-    public static final SoundEvent UI_INTERACTION = new SoundEvent(new ResourceLocation("owo", "ui.owo.interaction"));
+    public static final SoundEvent UI_INTERACTION = SoundEvent.createVariableRangeEvent(new ResourceLocation("owo", "ui.owo.interaction"));
 
 
     public static void playButtonSound() {

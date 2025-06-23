@@ -1,6 +1,7 @@
 package com.nyfaria.numismaticoverhaul.mixin.owomixins.ui;
 
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -10,4 +11,12 @@ public interface ClickableWidgetAccessor {
     @Accessor("height")
     void owo$setHeight(int height);
 
+    @Accessor("x")
+    void owo$setX(int x);
+
+    @Accessor("y")
+    void owo$setY(int y);
+
+    @Accessor("tooltip")
+    Tooltip owo$getTooltip();
 }

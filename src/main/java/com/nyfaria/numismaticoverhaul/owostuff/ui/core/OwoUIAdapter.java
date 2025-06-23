@@ -2,11 +2,11 @@ package com.nyfaria.numismaticoverhaul.owostuff.ui.core;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.renderdoc.RenderDoc;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -29,7 +29,7 @@ import java.util.function.BiFunction;
  *
  * @see com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseOwoScreen
  */
-public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener, Widget, NarratableEntry {
+public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener, Renderable, NarratableEntry {
 
     private static boolean isRendering = false;
 
@@ -162,7 +162,7 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
     }
 
     @Override
-    public void render(PoseStack matrices, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics matrices, int mouseX, int mouseY, float partialTicks) {
         try {
             isRendering = true;
 
@@ -177,12 +177,12 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
             GlStateManager._enableScissorTest();
 
             GlStateManager._scissorBox(0, 0, window.getWidth(), window.getHeight());
-            this.rootComponent.draw(matrices, mouseX, mouseY, partialTicks, delta);
+            this.rootComponent.draw((Drawer) matrices, mouseX, mouseY, partialTicks, delta);
 
             GlStateManager._disableScissorTest();
             RenderSystem.disableDepthTest();
 
-            this.rootComponent.drawTooltip(matrices, mouseX, mouseY, partialTicks, delta);
+            this.rootComponent.drawTooltip((Drawer) matrices, mouseX, mouseY, partialTicks, delta);
 
             final var hovered = this.rootComponent.childAt(mouseX, mouseY);
             if (!disposed && hovered != null && hovered.cursorStyle() != this.lastCursorStyle) {
@@ -191,9 +191,8 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
             }
 
             if (this.enableInspector) {
-                matrices.translate(0, 0, this.inspectorZOffset);
-                Drawer.debug().drawInspector(matrices, this.rootComponent, mouseX, mouseY, !this.globalInspector);
-                matrices.translate(0, 0, -this.inspectorZOffset);
+                matrices.pose().translate(0, 0, this.inspectorZOffset);
+                matrices.pose().translate(0, 0, -this.inspectorZOffset);
             }
 
             if (this.captureFrame) RenderDoc.endFrameCapture();
@@ -262,5 +261,15 @@ public class OwoUIAdapter<T extends ParentComponent> implements GuiEventListener
 
     public static boolean isRendering() {
         return isRendering;
+    }
+
+    @Override
+    public void setFocused(boolean pFocused) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
     }
 }

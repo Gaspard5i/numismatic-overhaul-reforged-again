@@ -7,6 +7,7 @@ import com.nyfaria.numismaticoverhaul.client.gui.purse.PurseWidget;
 import com.nyfaria.numismaticoverhaul.config.ExampleClientConfig;
 import com.nyfaria.numismaticoverhaul.network.NetworkHandler;
 import com.nyfaria.numismaticoverhaul.network.RequestPurseActionC2SPacket;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
@@ -37,7 +38,7 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
         int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
         int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
 
-        numismatic$purse = new PurseWidget(this.leftPos + purseX, this.topPos + purseY, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player));
+        numismatic$purse = new PurseWidget(this.leftPos + purseX, this.topPos + purseY, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player), this.minecraft.renderBuffers().bufferSource());
 
         numismatic$button = new PurseButton(this.leftPos + purseX + 29, this.topPos + purseY - 14, button -> {
             if (Screen.hasShiftDown()) {
@@ -51,15 +52,15 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
     }
 
     //Incredibly beautiful lambda mixin
-    @Inject(method = {"lambda$init$0","m_98879_"}, at = @At("TAIL"))
+    @Inject(method = {"lambda$init$0"}, at = @At("TAIL"))
     private void updateWidgetPosition(Button button, CallbackInfo ci) {
         this.numismatic$button.setPosition(this.leftPos + 158, this.topPos + 6);
-        this.numismatic$purse = new PurseWidget(this.leftPos + 129, this.topPos + 20, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player));
+        this.numismatic$purse = new PurseWidget(this.leftPos + 129, this.topPos + 20, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player), minecraft.renderBuffers().bufferSource());
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    public void onRender(PoseStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        numismatic$purse.render(matrices, mouseX, mouseY, delta);
+    public void onRender(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
+        numismatic$purse.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
@@ -68,7 +69,7 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
     }
 
     @Override
-    protected void renderTooltip(PoseStack matrices, int x, int y) {
+    protected void renderTooltip(GuiGraphics matrices, int x, int y) {
         if (numismatic$purse.isMouseOver(x, y)) return;
         super.renderTooltip(matrices, x, y);
     }
