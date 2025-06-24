@@ -31,11 +31,8 @@ public class Drawer extends GuiGraphics {
     @Deprecated
     public static final ResourceLocation PANEL_INSET_TEXTURE = new ResourceLocation("owo", "textures/gui/panel_inset.png");
 
-    public static final ResourceLocation PANEL_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/default");
-    public static final ResourceLocation DARK_PANEL_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/dark");
-    public static final ResourceLocation PANEL_INSET_NINE_PATCH_TEXTURE = new ResourceLocation("owo", "panel/inset");
-    public static final NinePatchRenderer LIGHT_PANEL = new NinePatchRenderer(DARK_PANEL_NINE_PATCH_TEXTURE, Size.square(5), Size.square(16), false);
-    public static final NinePatchRenderer DARK_PANEL = new NinePatchRenderer(PANEL_INSET_NINE_PATCH_TEXTURE, Size.square(5), Size.square(16), false);
+    public static final NinePatchRenderer LIGHT_PANEL = new NinePatchRenderer(DARK_PANEL_TEXTURE, Size.square(5), Size.square(16), false);
+    public static final NinePatchRenderer DARK_PANEL = new NinePatchRenderer(PANEL_INSET_TEXTURE, Size.square(5), Size.square(16), false);
     private boolean recording = false;
 
     private Drawer(Minecraft client, MultiBufferSource.BufferSource vertexConsumers) {

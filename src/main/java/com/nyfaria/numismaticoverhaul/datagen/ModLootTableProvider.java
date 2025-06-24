@@ -1,39 +1,55 @@
 package com.nyfaria.numismaticoverhaul.datagen;
 
-/*import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.loot.LootTableProvider;
+import com.nyfaria.numismaticoverhaul.loot_stuff.AddItemModifier;
+import com.nyfaria.numismaticoverhaul.NumismaticOverhaul;
+import com.nyfaria.numismaticoverhaul.config.NumOvhConfig;
+import com.nyfaria.numismaticoverhaul.init.ItemInit;
+import com.nyfaria.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.packs.VanillaChestLoot;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.LootTables;
-import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraftforge.common.data.GlobalLootModifierProvider;
+import net.minecraftforge.common.loot.LootTableIdCondition;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-public class ModLootTableProvider extends LootTableProvider {
-
-    public ModLootTableProvider(DataGenerator pGenerator) {
-        super(pGenerator);
+public class ModLootTableProvider extends GlobalLootModifierProvider {
+    public ModLootTableProvider(PackOutput output) {
+        super(output, NumismaticOverhaul.MODID);
     }
 
     @Override
-    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
-
-        return ImmutableList.of(
-                Pair.of(ModBlockLootTables::new, LootContextParamSets.BLOCK),
-                Pair.of(ModEntityLootTables::new, LootContextParamSets.ENTITY)
-        );
+    protected void start() {
+        for (String structuresWithCoins : NumOvhConfig.INSTANCE.structuresToHaveCoins.get()) {
+            ResourceLocation lootLocation = new ResourceLocation(structuresWithCoins);
+            String structureName = lootLocation.getPath().replace("/", "_");
+            this.add("generic_coin_loot_table_" + structureName, new AddItemModifier(new LootItemCondition[]{
+                    LootItemRandomChanceCondition.randomChance(0.10F).build(),
+                    new LootTableIdCondition.Builder(lootLocation).build()}, ItemInit.GOLD_COIN.get()) {
+            });
+        }
+        this.add("money_bag_loot_table_pyramid", new MoneyBagLootModifier(new LootItemCondition[]{
+                LootItemRandomChanceCondition.randomChance(0.45F).build(),
+                new LootTableIdCondition.Builder(BuiltInLootTables.DESERT_PYRAMID).build()}, 300, 1200) {
+        });
+        for (ResourceLocation dungeonTypeLoot : List.of(BuiltInLootTables.SIMPLE_DUNGEON, BuiltInLootTables.ABANDONED_MINESHAFT)) {
+            this.add("money_bag_loot_table_" + dungeonTypeLoot.getPath().replace("/", "_"), new MoneyBagLootModifier(new LootItemCondition[]{
+                    LootItemRandomChanceCondition.randomChance(0.75F).build(),
+                    new LootTableIdCondition.Builder(dungeonTypeLoot).build()}, 500, 2000) {
+            });
+        }
+        for (ResourceLocation specialTypeLoot : List.of(BuiltInLootTables.BASTION_TREASURE, BuiltInLootTables.STRONGHOLD_CORRIDOR, BuiltInLootTables.PILLAGER_OUTPOST, BuiltInLootTables.BURIED_TREASURE)) {
+            this.add("money_bag_loot_table_" + specialTypeLoot.getPath().replace("/", "_"), new MoneyBagLootModifier(new LootItemCondition[]{
+                    LootItemRandomChanceCondition.randomChance(0.75F).build(),
+                    new LootTableIdCondition.Builder(specialTypeLoot).build()}, 1500, 4000) {
+            });
+        }
+        this.add("money_bag_loot_table_stronghold_library", new MoneyBagLootModifier(new LootItemCondition[]{
+                LootItemRandomChanceCondition.randomChance(0.85F).build(),
+                new LootTableIdCondition.Builder(BuiltInLootTables.STRONGHOLD_LIBRARY).build()}, 2000, 6000) {
+        });
     }
-
-    @Override
-    protected void validate(Map<ResourceLocation, LootTable> map, ValidationContext validationtracker) {
-        map.forEach((id, table) -> LootTables.validate(validationtracker, id, table));
-    }
-}*/
+}

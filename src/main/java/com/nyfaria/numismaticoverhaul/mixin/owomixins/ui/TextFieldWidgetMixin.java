@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.mixin.owomixins.ui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
@@ -13,9 +12,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.w3c.dom.Element;
 
 import java.util.Map;
@@ -23,7 +19,6 @@ import java.util.Map;
 @SuppressWarnings("ConstantConditions")
 @Mixin(EditBox.class)
 public abstract class TextFieldWidgetMixin extends AbstractWidget implements ModComponent {
-
     @Shadow
     public abstract void setBordered(boolean drawsBackground);
 
@@ -39,11 +34,6 @@ public abstract class TextFieldWidgetMixin extends AbstractWidget implements Mod
             ((EditBox) (Object) this).moveCursorToStart();
         });
         UIParsing.apply(children, "show-background", UIParsing::parseBool, this::setBordered);
-    }
-
-    @SuppressWarnings("ReferenceToMixin")
-    @Override
-    public void setX(int x) {
     }
 
     protected CursorStyle owo$preferredCursorStyle() {

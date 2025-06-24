@@ -1,8 +1,8 @@
 package com.nyfaria.numismaticoverhaul.mixin;
 
-import com.nyfaria.numismaticoverhaul.NumismaticOverhaul;
 import com.nyfaria.numismaticoverhaul.cap.CurrencyHolder;
 import com.nyfaria.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import com.nyfaria.numismaticoverhaul.config.NumOvhConfig;
 import com.nyfaria.numismaticoverhaul.currency.CurrencyConverter;
 import com.nyfaria.numismaticoverhaul.owostuff.ops.ItemOps;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +23,7 @@ public class ServerPlayerEntityMixin {
 
         final CurrencyHolder component = CurrencyHolderAttacher.getExampleHolderUnwrap(player);
 
-        var dropPercentage = world.getGameRules().getRule(NumismaticOverhaul.MONEY_DROP_PERCENTAGE).get() * .01f;
+        var dropPercentage = NumOvhConfig.INSTANCE.moneyDropChance.get().floatValue() * .01f;
         int dropped = (int) (component.getValue() * dropPercentage);
 
         var stacksDropped = CurrencyConverter.getAsValidStacks(dropped);

@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ModEditBox extends EditBox implements ModComponent {
-
-
     @Unique
     protected VanillaWidgetComponent owo$wrapper = null;
 
