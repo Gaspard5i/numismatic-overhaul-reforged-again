@@ -35,7 +35,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     private final List<ShopOffer> offers;
 
 
-    private ShopBlockEntity shop = null;
+    public ShopBlockEntity shop = null;
 
     public ShopScreenHandler(int syncId, Inventory playerInventory) {
         this(syncId, playerInventory, new SimpleContainer(27));
@@ -142,7 +142,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         }
     }
 
-    private void updateClient() {
+    public void updateClient() {
         NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()->(ServerPlayer)owner),new UpdateShopScreenS2CPacket(shop));
     }
 

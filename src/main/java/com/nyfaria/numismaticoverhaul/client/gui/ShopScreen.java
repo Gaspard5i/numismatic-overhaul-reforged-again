@@ -39,19 +39,21 @@ import java.util.function.Consumer;
 
 public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenHandler> {
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID,"textures/gui/shop_gui.png");
-    public static final ResourceLocation TRADES_TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID,"textures/gui/shop_gui_trades.png");
+    public static final ResourceLocation TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID, "textures/gui/shop_gui.png");
+    public static final ResourceLocation TRADES_TEXTURE = new ResourceLocation(NumismaticOverhaul.MODID, "textures/gui/shop_gui_trades.png");
 
     private final List<Button> tabButtons = new ArrayList<>();
     private final List<ShopOffer> offers = new ArrayList<>();
 
-    private Runnable afterDataUpdate = () -> {};
-    private Consumer<String> priceDisplay = s -> {};
+    private Runnable afterDataUpdate = () -> {
+    };
+    private Consumer<String> priceDisplay = s -> {
+    };
     private int tab = 0;
 
     public ShopScreen(ShopScreenHandler handler, Inventory inventory, net.minecraft.network.chat.Component title) {
 //        super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.file("../src/main/resources/assets/numismaticoverhaul/owo_ui/shop.xml"));
-        super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.asset(new ResourceLocation(NumismaticOverhaul.MODID,"shop")));
+        super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.asset(new ResourceLocation(NumismaticOverhaul.MODID, "shop")));
         this.inventoryLabelY += 1;
         this.titleLabelY = 5;
     }
@@ -68,7 +70,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
         leftColumn.child(makeTabButton(Items.CHEST, false, button -> selectTab(0)));
         leftColumn.child(makeTabButton(Items.EMERALD, true, button -> this.selectTab(1)));
 
-        ((ButtonWidgetExtension)rootComponent.childById(ButtonComponent.class, "extract-button")).onPress(button ->
+        ((ButtonWidgetExtension) rootComponent.childById(ButtonComponent.class, "extract-button")).onPress(button ->
                 this.menu.extractCurrency());
 
         rootComponent.childById(FlowLayout.class, "transfer-button").mouseDown().subscribe((x, y, button) -> {
@@ -126,8 +128,10 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
             this.titleLabelY = 5;
 
             this.component(FlowLayout.class, "right-column").removeChild(this.component(FlowLayout.class, "trade-edit-widget"));
-            this.afterDataUpdate = () -> {};
-            this.priceDisplay = s -> {};
+            this.afterDataUpdate = () -> {
+            };
+            this.priceDisplay = s -> {
+            };
         } else {
             this.swapBackgroundTexture(TRADES_TEXTURE);
             this.titleLabelY = 69420;
@@ -137,6 +141,9 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
             ButtonComponent deleteButton = editWidget.childByIdOther(ButtonComponent.class, "delete-button");
 
             EditBox priceField = editWidget.childByIdOther(EditBox.class, "price-field");
+            this.setFocused(priceField);
+            priceField.setEditable(true);
+            priceField.setCanLoseFocus(false);
             priceField.setMaxLength(7);
             priceField.setFilter(s -> s.matches("\\d*"));
             priceField.setResponder(s -> {
@@ -165,7 +172,6 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
             this.component(FlowLayout.class, "right-column").child(0, editWidget);
         }
-
         this.populateTrades(index);
         for (int i = 0; i < this.tabButtons.size(); i++) {
             this.tabButtons.get(i).active = i != index;
@@ -193,7 +199,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
             var component = this.model.expandTemplate(FlowLayout.class, "trade-button", Map.of("price", String.valueOf(offer.getPrice())));
             component.childById(ItemComponent.class, "item-display").stack(offer.getSellStack());
-            ((ButtonWidgetExtension)component.childByIdOther(Button.class, "trade-button")).onPress(button -> {
+            ((ButtonWidgetExtension) component.childByIdOther(Button.class, "trade-button")).onPress(button -> {
                 this.menu.loadOffer(offerIndex);
                 this.priceDisplay.accept(String.valueOf(offer.getPrice()));
             });
@@ -211,11 +217,11 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
     private FlowLayout makeTabButton(Item icon, boolean active, Button.OnPress onPress) {
         var buttonContainer = this.model.expandTemplate(FlowLayout.class, "tab-button", Map.of("icon-item", BuiltInRegistries.ITEM.getKey(icon).toString()));
 
-        final var button = ((ParentComponent)buttonContainer).childByIdOther(Button.class, "tab-button");
+        final var button = ((ParentComponent) buttonContainer).childByIdOther(Button.class, "tab-button");
         this.tabButtons.add(button);
 
         button.active = active;
-        ((ButtonWidgetExtension)button).onPress(onPress);
+        ((ButtonWidgetExtension) button).onPress(onPress);
 
         return (FlowLayout) buttonContainer;
     }

@@ -12,34 +12,32 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.List;
 
-public record UpdateShopScreenS2CPacket(List<ShopOffer> offers, long storedCurrency, boolean transferEnabled) implements IPacket {
+public record UpdateShopScreenS2CPacket(List<ShopOffer> offers, long storedCurrency,
+                                        boolean transferEnabled) implements IPacket {
 
     public UpdateShopScreenS2CPacket(FriendlyByteBuf packetBuf) {
-        this(packetBuf.readList((buf)-> ShopOffer.fromNbt(buf.readNbt())), packetBuf.readLong(), packetBuf.readBoolean());
+        this(packetBuf.readList((buf) -> ShopOffer.fromNbt(buf.readNbt())), packetBuf.readLong(), packetBuf.readBoolean());
     }
+
     public UpdateShopScreenS2CPacket(ShopBlockEntity shop) {
         this(shop.getOffers(), shop.getStoredCurrency(), shop.isTransferEnabled());
     }
 
+    @Override
     public void handle(NetworkEvent.Context context) {
         if (!(Minecraft.getInstance().screen instanceof ShopScreen screen)) return;
-        screen.update(this);
+        context.enqueueWork(() -> {
+            screen.update(this);
+        });
     }
 
     @Override
     public void write(FriendlyByteBuf packetBuf) {
         packetBuf.writeCollection(offers, (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt()));
         packetBuf.writeLong(storedCurrency);
-        packetBuf.writeBoolean(transferEnabled);
+        packetBuf.writeBoolean(transferEnabled);;
     }
-//    public static void initialize() {
-//        //noinspection ConstantConditions
-//        PacketBufSerializer.register(
-//                ShopOffer.class,
-//                (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt()),
-//                buf -> ShopOffer.fromNbt(buf.readNbt())
-//        );
-//    }
+
     public static void register(SimpleChannel channel, int id) {
         IPacket.register(channel, id, NetworkDirection.PLAY_TO_CLIENT, UpdateShopScreenS2CPacket.class, UpdateShopScreenS2CPacket::new);
     }
