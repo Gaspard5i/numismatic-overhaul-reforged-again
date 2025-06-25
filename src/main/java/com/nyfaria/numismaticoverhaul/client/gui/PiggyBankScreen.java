@@ -1,6 +1,7 @@
 package com.nyfaria.numismaticoverhaul.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.nyfaria.numismaticoverhaul.NumismaticOverhaul;
 import com.nyfaria.numismaticoverhaul.block.PiggyBankScreenHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseUIModelHandledScreen;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.base.BaseUIModelScreen;
@@ -10,6 +11,7 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class PiggyBankScreen extends BaseUIModelHandledScreen<FlowLayout, PiggyBankScreenHandler> {
@@ -17,7 +19,7 @@ public class PiggyBankScreen extends BaseUIModelHandledScreen<FlowLayout, PiggyB
     private TextureComponent bronzeHint, silverHint, goldHint;
 
     public PiggyBankScreen(PiggyBankScreenHandler handler, Inventory inventory, Component title) {
-        super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.file("../src/main/resources/assets/numismaticoverhaul/owo_ui/piggy_bank.xml"));
+        super(handler, inventory, title, FlowLayout.class, BaseUIModelScreen.DataSource.asset(new ResourceLocation(NumismaticOverhaul.MODID, "piggy_bank")));
         this.imageHeight = 145;
         this.inventoryLabelY = this.imageHeight - 94;
         this.titleLabelX = (this.imageWidth - Minecraft.getInstance().font.width(title)) / 2;
