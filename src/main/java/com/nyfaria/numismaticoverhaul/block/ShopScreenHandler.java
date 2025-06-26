@@ -10,6 +10,7 @@ import com.nyfaria.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 import com.nyfaria.numismaticoverhaul.owostuff.client.screens.ScreenUtils;
 import com.nyfaria.numismaticoverhaul.owostuff.client.screens.SlotGenerator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -22,37 +23,29 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.PacketDistributor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ShopScreenHandler extends AbstractContainerMenu {
-
     private final Player owner;
-
     private final Container shopInventory;
     private final SimpleContainer bufferInventory = new SimpleContainer(1);
-
-    private final List<ShopOffer> offers;
-
-
+    public List<ShopOffer> offers;
     public ShopBlockEntity shop = null;
+    public long storedCorrency;
+    public boolean canTransfer;
 
-    public ShopScreenHandler(int syncId, Inventory playerInventory) {
-        this(syncId, playerInventory, new SimpleContainer(27));
+    public ShopScreenHandler(int syncId, Inventory playerInventory, FriendlyByteBuf data) {
+        this(syncId, playerInventory, getShop(playerInventory.player, data));
     }
 
-    public ShopScreenHandler(int syncId, Inventory playerInventory, Container shopInventory) {
+    public ShopScreenHandler(int syncId, Inventory playerInventory, ShopBlockEntity shopInventory) {
         super(MenuInit.SHOP.get(), syncId);
         this.shopInventory = shopInventory;
         this.owner = playerInventory.player;
-
-        if (!this.owner.level().isClientSide) {
-            this.shop = (ShopBlockEntity) shopInventory;
-            this.offers = shop.getOffers();
-            updateClient();
-        } else {
-            this.offers = new ArrayList<>();
-        }
+        this.shop = shopInventory;
+        this.storedCorrency = this.shop.getStoredCurrency();
+        this.canTransfer = this.shop.allowsTransfer;
+        this.offers = this.shop.getOffers();
         SlotGenerator.begin(this::addSlot, 8, 17)
                 .slotFactory((inv, index, x, y) -> new AutoHidingSlot(inv, index, x, y, 0, false))
                 .grid(this.shopInventory, 0, 9, 3)
@@ -95,8 +88,8 @@ public class ShopScreenHandler extends AbstractContainerMenu {
                 NumismaticOverhaul.LOGGER.error("Player {} attempted to load invalid trade at index {}", owner.getName(), index);
                 return;
             }
-
             this.bufferInventory.setItem(0, this.offers.get((int) index).getSellStack());
+            this.updateClient();
         } else {
             NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.LOAD_OFFER, index));
         }
@@ -106,7 +99,6 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         if (!this.owner.level().isClientSide) {
             final var stack = bufferInventory.getItem(0);
             if (stack.isEmpty()) return;
-
             this.shop.addOrReplaceOffer(new ShopOffer(stack, price));
             this.updateClient();
         } else {
@@ -141,9 +133,8 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.TOGGLE_TRANSFER));
         }
     }
-
     public void updateClient() {
-        NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()->(ServerPlayer)owner),new UpdateShopScreenS2CPacket(shop));
+        NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) owner), new UpdateShopScreenS2CPacket(shop));
     }
 
     public ItemStack getBufferStack() {
@@ -153,6 +144,15 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     @Override
     public ItemStack quickMoveStack(Player player, int invSlot) {
         return ScreenUtils.handleSlotTransfer(this, invSlot, this.shopInventory.getContainerSize());
+    }
+
+    public static ShopBlockEntity getShop(Player player, FriendlyByteBuf friendlyByteBuf) {
+        ShopBlockEntity shopBlockEntity = (ShopBlockEntity) player.level().getBlockEntity(friendlyByteBuf.readBlockPos());
+        shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());
+        shopBlockEntity.getOffers().clear();
+        shopBlockEntity.getOffers().addAll(friendlyByteBuf.readList((buf) -> ShopOffer.fromNbt(buf.readNbt())));
+        shopBlockEntity.allowsTransfer = friendlyByteBuf.readBoolean();
+        return shopBlockEntity;
     }
 
     private static class AutoHidingSlot extends Slot {

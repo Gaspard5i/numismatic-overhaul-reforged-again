@@ -61,12 +61,13 @@ public class UIErrorToast implements Toast {
     @Override
     public Visibility render(GuiGraphics pGuiGraphics, ToastComponent pToastComponent, long pTimeSinceLastVisible) {
         pGuiGraphics.fill(0, 0, this.width(), this.height(), 0x77000000);
-        ((Drawer)pGuiGraphics).drawRectOutline(0, 0, this.width(), this.height(), 0xA7FF0000);
-
+        if (!(pGuiGraphics instanceof Drawer)) pGuiGraphics = Drawer.of(pGuiGraphics);
+        var owoContext = (Drawer) pGuiGraphics;
+        owoContext.drawRectOutline(0, 0, this.width(), this.height(), 0xA7FF0000);
         int xOffset = this.width() / 2 - this.textRenderer.width(this.errorMessage.get(0)) / 2;
-        pGuiGraphics.drawString(this.textRenderer,  this.errorMessage.get(0), 4 + xOffset, 4, 0xFFFFFF, true);
+        owoContext.drawString(this.textRenderer,  this.errorMessage.get(0), 4 + xOffset, 4, 0xFFFFFF, true);
         for (int i = 1; i < this.errorMessage.size(); i++) {
-            pGuiGraphics.drawString(this.textRenderer, this.errorMessage.get(i), 4, 4 + i * 11, 0xFFFFFF);
+            owoContext.drawString(this.textRenderer, this.errorMessage.get(i), 4, 4 + i * 11, 0xFFFFFF);
         }
 
         return pTimeSinceLastVisible > 10000 ? Visibility.HIDE : Visibility.SHOW;

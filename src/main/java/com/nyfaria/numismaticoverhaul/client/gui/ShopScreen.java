@@ -65,26 +65,52 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
     @Override
     protected void build(FlowLayout rootComponent) {
         this.tabButtons.clear();
-
         var leftColumn = rootComponent.childById(FlowLayout.class, "left-column");
         leftColumn.child(makeTabButton(Items.CHEST, false, button -> selectTab(0)));
         leftColumn.child(makeTabButton(Items.EMERALD, true, button -> this.selectTab(1)));
 
-        ((ButtonWidgetExtension) rootComponent.childById(ButtonComponent.class, "extract-button")).onPress(button ->
-                this.menu.extractCurrency());
+        ((ButtonWidgetExtension) rootComponent.childById(ButtonComponent.class, "extract-button")).onPress(button -> {
+            this.menu.extractCurrency();
+        });
 
         rootComponent.childById(FlowLayout.class, "transfer-button").mouseDown().subscribe((x, y, button) -> {
             if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) return false;
-
-            this.menu.toggleTransfer();
+            this.menu.toggleTransfer();;
             UISounds.playInteractionSound();
             return true;
         });
+        long[] storedCurrency = CurrencyResolver.splitValues(this.menu.storedCorrency);
+        this.component(LabelComponent.class, "bronze-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[0])));
+        this.component(LabelComponent.class, "silver-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[1])));
+        this.component(LabelComponent.class, "gold-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[2])));
+
+        int prevOffers = this.offers.size();
+        this.offers.clear();
+        this.offers.addAll(this.menu.offers);
+        this.populateTrades(this.tab);
+
+        if (this.tab == 1 && this.offers.size() > prevOffers) {
+            var offersScroll = this.component(ScrollContainer.class, "offer-container");
+            var leftColumn2 = offersScroll.childById(FlowLayout.class, "first-trades-column");
+
+            offersScroll.scrollTo(leftColumn2.children().get(leftColumn2.children().size() - 1));
+        }
+
+        this.component(FlowLayout.class, "transfer-button").tooltip(
+                menu.canTransfer
+                        ? net.minecraft.network.chat.Component.translatable("gui.numismaticoverhaul.shop.transfer_tooltip.enabled")
+                        : net.minecraft.network.chat.Component.translatable("gui.numismaticoverhaul.shop.transfer_tooltip.disabled")
+        );
+        this.component(LabelComponent.class, "transfer-label").text(
+                menu.canTransfer
+                        ? TextOps.withColor("✔", 0x28FFBF)
+                        : TextOps.withColor("✘", 0xEB1D36)
+        );
+
     }
 
     public void update(UpdateShopScreenS2CPacket data) {
         if (this.uiAdapter == null) return;
-
         long[] storedCurrency = CurrencyResolver.splitValues(data.storedCurrency());
         this.component(LabelComponent.class, "bronze-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[0])));
         this.component(LabelComponent.class, "silver-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[1])));
@@ -122,7 +148,6 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
     private void selectTab(int index) {
         if (this.tab == index) return;
-
         if (index == 0) {
             this.swapBackgroundTexture(TEXTURE);
             this.titleLabelY = 5;
@@ -155,9 +180,12 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
                 this.component(LabelComponent.class, "offer-gold-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(price[2])));
             });
 
-            submitButton.onPress((ButtonComponent button) -> this.menu.createOffer(Integer.parseInt(priceField.getValue())));
-            deleteButton.onPress((ButtonComponent button) -> this.menu.deleteOffer());
-
+            submitButton.onPress((ButtonComponent button) -> {
+                this.menu.createOffer(Integer.parseInt(priceField.getValue()));
+            });
+            deleteButton.onPress((ButtonComponent button) -> {
+                this.menu.deleteOffer();
+            });
             this.priceDisplay = priceField::setValue;
             this.afterDataUpdate = () -> {
                 var priceText = priceField.getValue();

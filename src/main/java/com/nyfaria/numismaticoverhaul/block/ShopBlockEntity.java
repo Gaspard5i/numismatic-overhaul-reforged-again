@@ -45,7 +45,7 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
 
     private long storedCurrency;
     private UUID owner;
-    private boolean allowsTransfer = false;
+    public boolean allowsTransfer = false;
 
     private int tradeIndex;
 
@@ -190,6 +190,7 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
         return new ShopScreenHandler(syncId, inv, this);
     }
+
 
     @Override
     public boolean stillValid(Player player) {

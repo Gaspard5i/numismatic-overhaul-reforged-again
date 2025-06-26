@@ -26,7 +26,7 @@ public class NMCreativeTabs {
                     .build()
     );
 
-    public static <T extends Item> RegistryObject<T> addToTab(RegistryObject<T> itemLike) {
+    public static <T extends ItemLike> RegistryObject<T> addToTab(RegistryObject<T> itemLike) {
         TAB_ITEMS.add(itemLike);
         return itemLike;
     }

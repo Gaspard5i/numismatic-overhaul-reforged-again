@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +28,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,15 +65,18 @@ public class ShopBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!world.isClientSide) {
-
             ShopBlockEntity shop = (ShopBlockEntity) world.getBlockEntity(pos);
-
             if (shop.getOwner().equals(player.getUUID())) {
                 if (player.isShiftKeyDown()) {
                     return openShopMerchant(player, shop);
                 } else {
-                    player.openMenu(state.getMenuProvider(world, pos));
-                    NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(()->(ServerPlayer)player), new UpdateShopScreenS2CPacket(shop));
+                    if (player instanceof ServerPlayer player1)
+                        NetworkHooks.openScreen(player1, shop, friendlyByteBuf -> {
+                            friendlyByteBuf.writeBlockPos(pos);
+                            friendlyByteBuf.writeLong(shop.getStoredCurrency());
+                            friendlyByteBuf.writeCollection(shop.getOffers(), (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt()));
+                            friendlyByteBuf.writeBoolean(shop.allowsTransfer);
+                        });
                 }
             } else {
                 return openShopMerchant(player, shop);
