@@ -1,10 +1,9 @@
 package com.nyfaria.numismaticoverhaul.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.cap.CurrencyHolderAttacher;
 import com.nyfaria.numismaticoverhaul.client.gui.purse.PurseButton;
 import com.nyfaria.numismaticoverhaul.client.gui.purse.PurseWidget;
-import com.nyfaria.numismaticoverhaul.config.ExampleClientConfig;
+import com.nyfaria.numismaticoverhaul.config.NOClientConfig;
 import com.nyfaria.numismaticoverhaul.network.NetworkHandler;
 import com.nyfaria.numismaticoverhaul.network.RequestPurseActionC2SPacket;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,8 +34,8 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
 
     @Inject(method = "init", at = @At("TAIL"))
     public void addButton(CallbackInfo ci) {
-        int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
-        int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
+        int purseX = NOClientConfig.CLIENT.pursePositionX.get();
+        int purseY = NOClientConfig.CLIENT.pursePositionY.get();
 
         numismatic$purse = new PurseWidget(this.leftPos + purseX, this.topPos + purseY, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player), this.minecraft.renderBuffers().bufferSource());
 

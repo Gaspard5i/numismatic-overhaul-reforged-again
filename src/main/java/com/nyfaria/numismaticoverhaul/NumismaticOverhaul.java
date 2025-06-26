@@ -3,14 +3,11 @@ package com.nyfaria.numismaticoverhaul;
 
 import com.mojang.serialization.Codec;
 import com.nyfaria.numismaticoverhaul.cap.CurrencyHolderAttacher;
-import com.nyfaria.numismaticoverhaul.config.ExampleClientConfig;
-import com.nyfaria.numismaticoverhaul.config.NumOvhConfig;
+import com.nyfaria.numismaticoverhaul.config.NOClientConfig;
+import com.nyfaria.numismaticoverhaul.config.NOConfig;
 import com.nyfaria.numismaticoverhaul.currency.MoneyBagLootEntry;
 import com.nyfaria.numismaticoverhaul.datagen.ModLootTableProvider;
-import com.nyfaria.numismaticoverhaul.init.BlockInit;
-import com.nyfaria.numismaticoverhaul.init.EntityInit;
-import com.nyfaria.numismaticoverhaul.init.ItemInit;
-import com.nyfaria.numismaticoverhaul.init.MenuInit;
+import com.nyfaria.numismaticoverhaul.init.*;
 import com.nyfaria.numismaticoverhaul.loot_stuff.AddItemModifier;
 import com.nyfaria.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
 import com.nyfaria.numismaticoverhaul.network.NetworkHandler;
@@ -54,15 +51,15 @@ public class NumismaticOverhaul {
 
     public NumismaticOverhaul() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        NumOvhConfig.loadConfig(NumOvhConfig.CONFIG_SPEC, FMLPaths.CONFIGDIR.get().resolve(MODID + "-common.toml").toString());
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, NumOvhConfig.CONFIG_SPEC);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ExampleClientConfig.CLIENT_SPEC);
+        NOConfig.loadConfig(NOConfig.CONFIG_SPEC, FMLPaths.CONFIGDIR.get().resolve(MODID + "-common.toml").toString());
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, NOConfig.CONFIG_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, NOClientConfig.CLIENT_SPEC);
         LOOT_MODIFIER_SERIALIZERS.register(bus);
         ItemInit.ITEMS.register(bus);
         EntityInit.ENTITIES.register(bus);
         BlockInit.BLOCKS.register(bus);
         BlockInit.BLOCK_ENTITIES.register(bus);
-        NMCreativeTabs.TABS.register(bus);
+        CreativeTabInit.TABS.register(bus);
         CurrencyHolderAttacher.register();
         MenuInit.MENU_TYPES.register(bus);
         VillagerTradesHandler.registerDefaultAdapters();

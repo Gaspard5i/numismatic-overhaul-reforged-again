@@ -10,13 +10,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.File;
 import java.util.List;
 
-public class NumOvhConfig {
+public class NOConfig {
 
     public static final ForgeConfigSpec CONFIG_SPEC;
-    public static final NumOvhConfig INSTANCE;
+    public static final NOConfig INSTANCE;
 
     static {
-        Pair<NumOvhConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(NumOvhConfig::new);
+        Pair<NOConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(NOConfig::new);
         CONFIG_SPEC = pair.getRight();
         INSTANCE = pair.getLeft();
     }
@@ -25,7 +25,7 @@ public class NumOvhConfig {
     public ForgeConfigSpec.ConfigValue<List<? extends String>> structuresToHaveCoins;
 
 
-    private NumOvhConfig(ForgeConfigSpec.Builder builder) {
+    private NOConfig(ForgeConfigSpec.Builder builder) {
         moneyDropChance = builder.defineInRange("% chance for player to drop money", 10.0, -1000, 1000);
         structuresToHaveCoins = builder.comment("Structures that have coins, specific rates can be changed via datapacks.").defineListAllowEmpty("Structures",
                 ImmutableList.of(BuiltInLootTables.STRONGHOLD_LIBRARY.toString(), BuiltInLootTables.BASTION_TREASURE.toString(), BuiltInLootTables.STRONGHOLD_CORRIDOR.toString(),

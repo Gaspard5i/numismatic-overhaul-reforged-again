@@ -31,7 +31,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     private final SimpleContainer bufferInventory = new SimpleContainer(1);
     public List<ShopOffer> offers;
     public ShopBlockEntity shop = null;
-    public long storedCorrency;
+    public long storedCurrency;
     public boolean canTransfer;
 
     public ShopScreenHandler(int syncId, Inventory playerInventory, FriendlyByteBuf data) {
@@ -43,7 +43,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         this.shopInventory = shopInventory;
         this.owner = playerInventory.player;
         this.shop = shopInventory;
-        this.storedCorrency = this.shop.getStoredCurrency();
+        this.storedCurrency = this.shop.getStoredCurrency();
         this.canTransfer = this.shop.allowsTransfer;
         this.offers = this.shop.getOffers();
         SlotGenerator.begin(this::addSlot, 8, 17)

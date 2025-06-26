@@ -2,11 +2,10 @@ package com.nyfaria.numismaticoverhaul.datagen;
 
 import com.nyfaria.numismaticoverhaul.loot_stuff.AddItemModifier;
 import com.nyfaria.numismaticoverhaul.NumismaticOverhaul;
-import com.nyfaria.numismaticoverhaul.config.NumOvhConfig;
+import com.nyfaria.numismaticoverhaul.config.NOConfig;
 import com.nyfaria.numismaticoverhaul.init.ItemInit;
 import com.nyfaria.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.loot.packs.VanillaChestLoot;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -23,7 +22,7 @@ public class ModLootTableProvider extends GlobalLootModifierProvider {
 
     @Override
     protected void start() {
-        for (String structuresWithCoins : NumOvhConfig.INSTANCE.structuresToHaveCoins.get()) {
+        for (String structuresWithCoins : NOConfig.INSTANCE.structuresToHaveCoins.get()) {
             ResourceLocation lootLocation = new ResourceLocation(structuresWithCoins);
             String structureName = lootLocation.getPath().replace("/", "_");
             this.add("generic_coin_loot_table_" + structureName, new AddItemModifier(new LootItemCondition[]{

@@ -3,13 +3,13 @@ package com.nyfaria.numismaticoverhaul.config;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class ExampleClientConfig {
+public class NOClientConfig {
 
     public static final ForgeConfigSpec CLIENT_SPEC;
-    public static final ExampleClientConfig CLIENT;
+    public static final NOClientConfig CLIENT;
 
     static {
-        Pair<ExampleClientConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(ExampleClientConfig::new);
+        Pair<NOClientConfig, ForgeConfigSpec> pair = new ForgeConfigSpec.Builder().configure(NOClientConfig::new);
         CLIENT_SPEC = pair.getRight();
         CLIENT = pair.getLeft();
     }
@@ -18,7 +18,7 @@ public class ExampleClientConfig {
     public ForgeConfigSpec.IntValue pursePositionX;
     public ForgeConfigSpec.IntValue pursePositionY;
 
-    public ExampleClientConfig(ForgeConfigSpec.Builder builder) {
+    public NOClientConfig(ForgeConfigSpec.Builder builder) {
         builder.push("client");
         example = builder.define("example", true);
         pursePositionX = builder.defineInRange("pursePositionX", 129, 0, 1000);

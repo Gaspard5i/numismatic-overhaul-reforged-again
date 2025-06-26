@@ -16,7 +16,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.nyfaria.numismaticoverhaul.NMCreativeTabs.addToTab;
+import static com.nyfaria.numismaticoverhaul.init.CreativeTabInit.addToTab;
 
 public class BlockInit {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, NumismaticOverhaul.MODID);
