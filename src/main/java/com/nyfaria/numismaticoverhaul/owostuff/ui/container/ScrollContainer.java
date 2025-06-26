@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.container;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.*;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModelParsingException;
@@ -392,8 +391,8 @@ public class ScrollContainer<C extends ModComponent> extends WrappingParentCompo
     }
 
     public enum ScrollDirection {
-        VERTICAL(ModComponent::height, ModComponent::setY, ModComponent::y, Insets::vertical, GLFW.GLFW_KEY_UP, GLFW.GLFW_KEY_DOWN),
-        HORIZONTAL(ModComponent::width, ModComponent::setX, ModComponent::x, Insets::horizontal, GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_RIGHT);
+        VERTICAL(ModComponent::height, ModComponent::owoSetY, ModComponent::y, Insets::vertical, GLFW.GLFW_KEY_UP, GLFW.GLFW_KEY_DOWN),
+        HORIZONTAL(ModComponent::width, ModComponent::owoSetX, ModComponent::x, Insets::horizontal, GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_RIGHT);
 
         public final Function<ModComponent, Integer> sizeGetter;
         public final BiConsumer<ModComponent, Integer> coordinateSetter;

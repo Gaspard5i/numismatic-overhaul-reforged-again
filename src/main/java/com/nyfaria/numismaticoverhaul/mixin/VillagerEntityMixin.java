@@ -21,7 +21,7 @@ public abstract class VillagerEntityMixin extends AbstractVillager {
     }
 
     @Shadow
-    public abstract int getPlayerReputation(Player player);
+    public abstract int getPlayerReputation(Player pPlayer);
 
     @Inject(method = "updateSpecialPrices", at = @At("TAIL"))
     private void captureReputation(Player player, CallbackInfo ci) {

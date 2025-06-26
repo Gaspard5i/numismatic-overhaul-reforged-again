@@ -208,8 +208,8 @@ public class SliderComponent extends AbstractSliderButton implements ModComponen
     }
 
     @Override
-    public void setX(int x) {
-        this.owo$getWrapper().setX(x);
+    public void owoSetX(int x) {
+        this.owo$getWrapper().owoSetX(x);
     }
 
     @Override
@@ -218,8 +218,8 @@ public class SliderComponent extends AbstractSliderButton implements ModComponen
     }
 
     @Override
-    public void setY(int y) {
-        this.owo$getWrapper().setY(y);
+    public void owoSetY(int y) {
+        this.owo$getWrapper().owoSetY(y);
     }
 
     @Override

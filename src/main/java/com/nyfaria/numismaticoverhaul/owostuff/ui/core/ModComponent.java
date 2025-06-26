@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.core;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.CharTyped;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.FocusGained;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.event.FocusLost;
@@ -503,7 +502,7 @@ public interface ModComponent extends PositionedRectangle {
      * @see #positioning(Positioning)
      * @see #margins(Insets)
      */
-    void setX(int x);
+    void owoSetX(int x);
 
     /**
      * @return The current y-coordinate of the top-left
@@ -527,7 +526,7 @@ public interface ModComponent extends PositionedRectangle {
      * @see #positioning(Positioning)
      * @see #margins(Insets)
      */
-    void setY(int y);
+    void owoSetY(int y);
 
     /**
      * Set the coordinates of the top-left corner of the
@@ -544,8 +543,8 @@ public interface ModComponent extends PositionedRectangle {
      * @see #margins(Insets)
      */
     default void moveTo(int x, int y) {
-        this.setX(x);
-        this.setY(y);
+        this.owoSetX(x);
+        this.owoSetY(y);
     }
 
     enum FocusSource {

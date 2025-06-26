@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.component;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.CursorStyle;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
@@ -132,8 +131,8 @@ public class ModEditBox extends EditBox implements ModComponent {
     }
 
     @Override
-    public void setX(int x) {
-        this.owo$getWrapper().setX(x);
+    public void owoSetX(int x) {
+        this.owo$getWrapper().owoSetX(x);
     }
 
     @Override
@@ -142,8 +141,8 @@ public class ModEditBox extends EditBox implements ModComponent {
     }
 
     @Override
-    public void setY(int y) {
-        this.owo$getWrapper().setY(y);
+    public void owoSetY(int y) {
+        this.owo$getWrapper().owoSetY(y);
     }
 
     @Override

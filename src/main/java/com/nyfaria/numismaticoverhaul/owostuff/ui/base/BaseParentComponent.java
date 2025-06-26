@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.base;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.HorizontalAlignment;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
@@ -15,7 +14,6 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.FocusHandler;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.ScissorStack;
 import com.nyfaria.numismaticoverhaul.owostuff.util.Observable;
-import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -265,22 +263,22 @@ public abstract class BaseParentComponent extends BaseComponent implements Paren
     }
 
     @Override
-    public void setX(int x) {
+    public void owoSetX(int x) {
         int offset = x - this.x;
-        super.setX(x);
+        super.owoSetX(x);
 
         for (var child : this.children()) {
-            child.setX(child.x() + offset);
+            child.owoSetX(child.x() + offset);
         }
     }
 
     @Override
-    public void setY(int y) {
+    public void owoSetY(int y) {
         int offset = y - this.y;
-        super.setY(y);
+        super.owoSetY(y);
 
         for (var child : this.children()) {
-            child.setY(child.y() + offset);
+            child.owoSetY(child.y() + offset);
         }
     }
 
@@ -351,6 +349,8 @@ public abstract class BaseParentComponent extends BaseComponent implements Paren
         }
 
         var focusHandler = this.focusHandler();
+        if (focusHandler == null)
+            return;
         for (var child : children) {
             if (!ScissorStack.isVisible(child, matrices.pose())) continue;
             matrices.pose().translate(0, 0, child.zIndex());

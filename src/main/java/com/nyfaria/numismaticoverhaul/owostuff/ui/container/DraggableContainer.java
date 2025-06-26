@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.owostuff.ui.container;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Insets;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ModComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.ParentComponent;
@@ -8,7 +7,6 @@ import com.nyfaria.numismaticoverhaul.owostuff.ui.core.Sizing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIModel;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.parsing.UIParsing;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.util.Drawer;
-import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
@@ -53,8 +51,8 @@ public class DraggableContainer<C extends ModComponent> extends WrappingParentCo
         this.xOffset += deltaX;
         this.yOffset += deltaY;
 
-        super.setX((int) (this.baseX + Math.round(this.xOffset)));
-        super.setY((int) (this.baseY + Math.round(this.yOffset)));
+        super.owoSetX((int) (this.baseX + Math.round(this.xOffset)));
+        super.owoSetY((int) (this.baseY + Math.round(this.yOffset)));
         return super.onMouseDrag(mouseX, mouseY, deltaX, deltaY, button);
     }
 
@@ -68,15 +66,15 @@ public class DraggableContainer<C extends ModComponent> extends WrappingParentCo
     }
 
     @Override
-    public void setX(int x) {
+    public void owoSetX(int x) {
         this.baseX = x;
-        super.setX((int) (x + Math.round(this.xOffset)));
+        super.owoSetX((int) (x + Math.round(this.xOffset)));
     }
 
     @Override
-    public void setY(int y) {
+    public void owoSetY(int y) {
         this.baseY = y;
-        super.setY((int) (y + Math.round(this.yOffset)));
+        super.owoSetY((int) (y + Math.round(this.yOffset)));
     }
 
     @Override

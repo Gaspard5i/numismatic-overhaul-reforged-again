@@ -240,7 +240,7 @@ public interface ComponentStub extends ModComponent {
     }
 
     @Override
-    default void setX(int x) {
+    default void owoSetX(int x) {
         throw new IllegalStateException("Interface stub method called");
     }
 
@@ -250,7 +250,7 @@ public interface ComponentStub extends ModComponent {
     }
 
     @Override
-    default void setY(int y) {
+    default void owoSetY(int y) {
         throw new IllegalStateException("Interface stub method called");
     }
 

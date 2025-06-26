@@ -329,7 +329,7 @@ public abstract class BaseComponent implements ModComponent {
     }
 
     @Override
-    public void setX(int x) {
+    public void owoSetX(int x) {
         this.x = x;
     }
 
@@ -339,7 +339,7 @@ public abstract class BaseComponent implements ModComponent {
     }
 
     @Override
-    public void setY(int y) {
+    public void owoSetY(int y) {
         this.y = y;
     }
 

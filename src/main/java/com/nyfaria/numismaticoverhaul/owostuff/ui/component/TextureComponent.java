@@ -174,4 +174,5 @@ public class TextureComponent extends BaseComponent {
 
         return new TextureComponent(textureId, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
+
 }

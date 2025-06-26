@@ -1,6 +1,5 @@
 package com.nyfaria.numismaticoverhaul.mixin.owomixins.ui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.component.Components;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.component.VanillaWidgetComponent;
 import com.nyfaria.numismaticoverhaul.owostuff.ui.core.AnimatableProperty;
@@ -134,8 +133,8 @@ public abstract class ClickableWidgetMixin implements ComponentStub {
     }
 
     @Override
-    public void setX(int x) {
-        this.owo$getWrapper().setX(x);
+    public void owoSetX(int x) {
+        this.owo$getWrapper().owoSetX(x);
     }
 
     @Override
@@ -144,8 +143,8 @@ public abstract class ClickableWidgetMixin implements ComponentStub {
     }
 
     @Override
-    public void setY(int y) {
-        this.owo$getWrapper().setY(y);
+    public void owoSetY(int y) {
+        this.owo$getWrapper().owoSetY(y);
     }
 
     @Override
