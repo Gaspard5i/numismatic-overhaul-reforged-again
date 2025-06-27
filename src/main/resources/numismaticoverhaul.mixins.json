@@ -1,9 +1,9 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.nyfaria.numismaticoverhaul.mixin",
+  "package": "tallestred.numismaticoverhaul.mixin",
   "compatibilityLevel": "JAVA_17",
-  "plugin": "com.nyfaria.numismaticoverhaul.mixin.ConfigPlugin",
+  "plugin": "tallestred.numismaticoverhaul.mixin.ConfigPlugin",
   "refmap": "numismaticoverhaul.refmap.json",
   "mixins": [
     "InvWrapperMixin",
