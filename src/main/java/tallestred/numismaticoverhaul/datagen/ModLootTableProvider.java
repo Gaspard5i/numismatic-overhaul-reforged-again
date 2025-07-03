@@ -1,5 +1,6 @@
 package tallestred.numismaticoverhaul.datagen;
 
+import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
 import tallestred.numismaticoverhaul.loot_stuff.AddItemModifier;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.config.NOConfig;
@@ -10,10 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
-import net.minecraftforge.common.data.GlobalLootModifierProvider;
-import net.minecraftforge.common.loot.LootTableIdCondition;
 
-import java.util.List;
+/*import java.util.List;
 
 public class ModLootTableProvider extends GlobalLootModifierProvider {
     public ModLootTableProvider(PackOutput output) {
@@ -51,4 +50,4 @@ public class ModLootTableProvider extends GlobalLootModifierProvider {
                 new LootTableIdCondition.Builder(BuiltInLootTables.STRONGHOLD_LIBRARY).build()}, 2000, 6000) {
         });
     }
-}
+}*/

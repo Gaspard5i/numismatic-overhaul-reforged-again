@@ -1,6 +1,9 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,6 +20,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SellSingleEnchantmentAdapter extends TradeJsonAdapter {
@@ -40,18 +44,29 @@ public class SellSingleEnchantmentAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            List<Enchantment> list = BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isTradeable).collect(Collectors.toList());
-            Enchantment enchantment = list.get(random.nextInt(list.size()));
+            int cost;
+            ItemStack itemStack;
 
-            int enchantmentLevel = Mth.nextInt(random, enchantment.getMinLevel(), enchantment.getMaxLevel());
+            var optionalEnchantment = entity.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).getRandomElementOf(EnchantmentTags.TRADEABLE, random);
+            if (optionalEnchantment.isPresent()) {
+                var enchantmentEntry = optionalEnchantment.get();
+                var enchantment = enchantmentEntry.value();
 
-            ItemStack itemStack = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, enchantmentLevel));
-            int cost = 100 * (10 / enchantment.getRarity().getWeight()) + (random.nextInt(50) + enchantmentLevel) * enchantmentLevel * enchantmentLevel * (10 / enchantment.getRarity().getWeight());
-            if (enchantment.isTreasureOnly()) {
-                cost *= 2;
+                var enchantmentLevel = Mth.nextInt(random, enchantment.getMinLevel(), enchantment.getMaxLevel());
+                itemStack = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantmentEntry, enchantmentLevel));
+
+                cost = 100 * (10 / enchantment.getWeight()) + (random.nextInt(50) + enchantmentLevel) * enchantmentLevel * enchantmentLevel * (10 / enchantment.getWeight());
+                if (enchantmentEntry.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+                    cost *= 2;
+                }
+            } else {
+                cost = 1;
+                itemStack = new ItemStack(Items.BOOK);
             }
 
-            return new MerchantOffer(CurrencyHelper.getClosest(cost), new ItemStack(Items.BOOK), itemStack, maxUses, this.experience, multiplier);
+            var itemAndCost = CurrencyHelper.getClosest(cost);
+
+            return new MerchantOffer(new ItemCost(itemAndCost.getItem(), itemAndCost.getCount()), Optional.of(new ItemCost(Items.BOOK)), itemStack, maxUses, this.experience, multiplier);
         }
     }
 }

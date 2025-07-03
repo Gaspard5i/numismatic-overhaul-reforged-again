@@ -1,5 +1,6 @@
 package tallestred.numismaticoverhaul.currency;
 
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.item.CoinItem;
 import tallestred.numismaticoverhaul.item.CurrencyItem;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
@@ -23,19 +24,13 @@ public class CurrencyHelper {
      * @return The amount of currency contained in the player's inventory
      */
     public static long getMoneyInInventory(Player player, boolean remove) {
-
         long value = 0;
-
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
-            if (isCombined(stack)) continue;
             if (!(stack.getItem() instanceof CurrencyItem currencyItem)) continue;
-
             value += currencyItem.getValue(stack);
-
             if (remove) player.getInventory().removeItem(stack);
         }
-
         return value;
     }
 
@@ -43,7 +38,6 @@ public class CurrencyHelper {
         return stacks.stream().mapToInt(stack -> {
             if (stack == null) return 0;
 
-            if (isCombined(stack)) return 0;
             if (!(stack.getItem() instanceof CurrencyItem currencyItem)) return 0;
             return (int) currencyItem.getValue(stack);
         }).sum();
@@ -74,22 +68,18 @@ public class CurrencyHelper {
      * @return The List of {@link ItemStack}
      */
     public static List<ItemStack> getAsStacks(long value, int maxStacks) {
-
         List<ItemStack> stacks = new ArrayList<>();
         List<ItemStack> rawStacks = CurrencyConverter.getAsValidStacks(value);
-
         if (rawStacks.size() <= maxStacks) {
             stacks.addAll(rawStacks);
         } else {
-            stacks.add(MoneyBagItem.create(value));
+            stacks.add(MoneyBagItem.fromRawValue(value));
         }
-
         return stacks;
     }
 
     public static ItemStack getClosest(long value) {
         long[] values = CurrencyResolver.splitValues(value);
-
         for (int i = 0; i < 2; i++) {
             if (values[i + 1] == 0) break;
             values[i + 1] += Math.round(values[i] / 100f);
@@ -99,21 +89,9 @@ public class CurrencyHelper {
         return CurrencyConverter.getAsItemStackList(CurrencyResolver.combineValues(values)).get(0);
     }
 
-    public static long[] getFromNbt(CompoundTag nbt, String key) {
-        if (nbt.contains(key, Tag.TAG_LONG_ARRAY)) return nbt.getLongArray(key);
-        if (!nbt.contains(key, Tag.TAG_INT_ARRAY)) return new long[0];
-
-        var intArray = nbt.getIntArray(key);
-        var longArray = new long[intArray.length];
-        for (int i = 0; i < intArray.length; i++) {
-            longArray[i] = intArray[i];
-        }
-
-        return longArray;
-    }
-
-    private static boolean isCombined(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().contains("Combined", Tag.TAG_BYTE);
+    public static ItemCost getClosestTradeItem(long price) {
+        var closestPriceStack = CurrencyHelper.getClosest(price);
+        return new ItemCost(closestPriceStack.getItem(), closestPriceStack.getCount());
     }
 
 }

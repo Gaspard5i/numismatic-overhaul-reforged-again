@@ -1,5 +1,7 @@
 package tallestred.numismaticoverhaul.block;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.world.level.block.AnvilBlock;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.init.BlockInit;
 import net.minecraft.core.BlockPos;
@@ -25,11 +27,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 public class ShopBlock extends BaseEntityBlock {
-
+    public static final MapCodec<ShopBlock> CODEC = simpleCodec(ShopBlock::new);
     private static final VoxelShape MAIN_PILLAR = Block.box(1, 0, 1, 14, 8, 14);
 
     private static final VoxelShape PLATE = Block.box(0, 8, 0, 16, 12, 16);
@@ -43,9 +44,19 @@ public class ShopBlock extends BaseEntityBlock {
 
     private final boolean inexhaustible;
 
+    public ShopBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+        this.inexhaustible = false;
+    }
+
     public ShopBlock(boolean inexhaustible) {
         super(BlockBehaviour.Properties.of().noOcclusion().destroyTime(5.0f));
         this.inexhaustible = inexhaustible;
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -59,7 +70,7 @@ public class ShopBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!world.isClientSide) {
             ShopBlockEntity shop = (ShopBlockEntity) world.getBlockEntity(pos);
             if (shop.getOwner().equals(player.getUUID())) {
@@ -67,10 +78,10 @@ public class ShopBlock extends BaseEntityBlock {
                     return openShopMerchant(player, shop);
                 } else {
                     if (player instanceof ServerPlayer player1)
-                        NetworkHooks.openScreen(player1, shop, friendlyByteBuf -> {
+                        player1.openMenu(shop, friendlyByteBuf -> {
                             friendlyByteBuf.writeBlockPos(pos);
                             friendlyByteBuf.writeLong(shop.getStoredCurrency());
-                            friendlyByteBuf.writeCollection(shop.getOffers(), (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt()));
+                            friendlyByteBuf.writeCollection(shop.getOffers(), (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt(world.getServer().registryAccess())));
                             friendlyByteBuf.writeBoolean(shop.allowsTransfer);
                         });
                 }

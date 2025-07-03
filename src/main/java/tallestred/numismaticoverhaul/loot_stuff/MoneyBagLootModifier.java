@@ -2,7 +2,10 @@ package tallestred.numismaticoverhaul.loot_stuff;
 
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.neoforge.common.loot.LootModifier;
 import tallestred.numismaticoverhaul.currency.CurrencyResolver;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -10,14 +13,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
 public class MoneyBagLootModifier extends LootModifier {
-    public static final Supplier<Codec<MoneyBagLootModifier>> CODEC = Suppliers.memoize(() -> RecordCodecBuilder.create(inst -> codecStart(inst).and(
+    public static final Supplier<MapCodec<MoneyBagLootModifier>> CODEC =  Suppliers.memoize(()
+            -> RecordCodecBuilder.mapCodec(inst -> codecStart(inst).and(
             inst.group(
                     Codec.INT.fieldOf("min").forGetter(m -> m.min),
                     Codec.INT.fieldOf("max").forGetter(m -> m.max)
@@ -42,12 +44,12 @@ public class MoneyBagLootModifier extends LootModifier {
         }
         int value = Mth.nextInt(context.getRandom(), this.min, this.max);
         if (value != 0)
-            generatedLoot.add(MoneyBagItem.createCombined(CurrencyResolver.splitValues(value)));
+            generatedLoot.add(MoneyBagItem.fromValues(CurrencyResolver.splitValues(value)));
         return generatedLoot;
     }
 
     @Override
-    public Codec<? extends IGlobalLootModifier> codec() {
+    public MapCodec<? extends IGlobalLootModifier> codec() {
         return CODEC.get();
     }
 }

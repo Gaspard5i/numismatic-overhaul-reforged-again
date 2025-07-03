@@ -1,15 +1,15 @@
 package tallestred.numismaticoverhaul.init;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +17,18 @@ import java.util.function.Supplier;
 
 import static tallestred.numismaticoverhaul.NumismaticOverhaul.MODID;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = MODID)
+@EventBusSubscriber(modid = MODID)
 public class EntityInit {
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     private static final List<AttributesRegister<?>> attributeSuppliers = new ArrayList<>();
 
-    private static <T extends Entity> RegistryObject<EntityType<T>> registerEntity(String name, Supplier<EntityType.Builder<T>> supplier) {
+    private static <T extends Entity> DeferredHolder<EntityType<?>, EntityType<T>> registerEntity(String name, Supplier<EntityType.Builder<T>> supplier) {
         return ENTITIES.register(name, () -> supplier.get().build(MODID + ":" + name));
     }
 
-    private static <T extends LivingEntity> RegistryObject<EntityType<T>> registerEntity(String name, Supplier<EntityType.Builder<T>> supplier,
-            Supplier<AttributeSupplier.Builder> attributeSupplier) {
-        RegistryObject<EntityType<T>> entityTypeSupplier = registerEntity(name, supplier);
+    private static <T extends LivingEntity> DeferredHolder<EntityType<?>, EntityType<T>> registerEntity(String name, Supplier<EntityType.Builder<T>> supplier,
+                                                                                                        Supplier<AttributeSupplier.Builder> attributeSupplier) {
+        DeferredHolder<EntityType<?>, EntityType<T>> entityTypeSupplier = registerEntity(name, supplier);
         attributeSuppliers.add(new AttributesRegister<>(entityTypeSupplier, attributeSupplier));
         return entityTypeSupplier;
     }
@@ -38,5 +38,7 @@ public class EntityInit {
         attributeSuppliers.forEach(p -> e.put(p.entityTypeSupplier.get(), p.factory.get().build()));
     }
 
-    private record AttributesRegister<E extends LivingEntity>(Supplier<EntityType<E>> entityTypeSupplier, Supplier<AttributeSupplier.Builder> factory) {}
+    private record AttributesRegister<E extends LivingEntity>(Supplier<EntityType<E>> entityTypeSupplier,
+                                                              Supplier<AttributeSupplier.Builder> factory) {
+    }
 }

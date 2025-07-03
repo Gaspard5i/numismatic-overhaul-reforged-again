@@ -1,16 +1,16 @@
 package tallestred.numismaticoverhaul.event;
 
+import io.wispforest.owo.ui.parsing.UIModelLoader;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.client.gui.CurrencyTooltipComponent;
 import tallestred.numismaticoverhaul.item.CurrencyTooltipData;
-import tallestred.numismaticoverhaul.owostuff.ui.parsing.UIModelLoader;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = NumismaticOverhaul.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = NumismaticOverhaul.MODID, value = Dist.CLIENT)
 public class ClientModEvents {
 
     @SubscribeEvent

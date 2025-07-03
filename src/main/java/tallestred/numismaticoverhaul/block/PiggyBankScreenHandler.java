@@ -1,11 +1,11 @@
 package tallestred.numismaticoverhaul.block;
 
+import io.wispforest.owo.client.screens.ScreenUtils;
+import io.wispforest.owo.client.screens.SlotGenerator;
+import io.wispforest.owo.client.screens.ValidatingSlot;
 import tallestred.numismaticoverhaul.init.BlockInit;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import tallestred.numismaticoverhaul.init.MenuInit;
-import tallestred.numismaticoverhaul.owostuff.client.screens.ScreenUtils;
-import tallestred.numismaticoverhaul.owostuff.client.screens.SlotGenerator;
-import tallestred.numismaticoverhaul.owostuff.client.screens.ValidatingSlot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;

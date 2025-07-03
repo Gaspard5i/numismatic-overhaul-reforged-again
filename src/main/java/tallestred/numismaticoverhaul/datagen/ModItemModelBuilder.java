@@ -2,7 +2,7 @@ package tallestred.numismaticoverhaul.datagen;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.model.generators.ItemModelBuilder;
+/*import net.minecraftforge.client.model.generators.ItemModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class ModItemModelBuilder extends ItemModelBuilder {
@@ -19,4 +19,4 @@ public class ModItemModelBuilder extends ItemModelBuilder {
         this.textures.put(key, texture.toString());
         return this;
     }
-}
+}*/

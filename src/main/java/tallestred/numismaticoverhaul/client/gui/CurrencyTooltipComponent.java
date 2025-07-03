@@ -1,9 +1,10 @@
 package tallestred.numismaticoverhaul.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import io.wispforest.owo.ops.ItemOps;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.item.CurrencyTooltipData;
-import tallestred.numismaticoverhaul.owostuff.ops.ItemOps;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -66,9 +67,9 @@ public class CurrencyTooltipComponent implements ClientTooltipComponent {
         List<ItemStack> originalCoins = data.original()[0] != -1 ? CurrencyConverter.getAsItemStackList(data.original()) : new ArrayList<>();
         List<ItemStack> coins = CurrencyConverter.getAsItemStackList(data.value());
 
-        RenderSystem.setShaderTexture(0, ResourceLocation.parse("textures/gui/container/villager2.png"));
+        RenderSystem.setShaderTexture(0, ResourceLocation.parse("container/villager/discount_strikethrough.png"));
         for (int i = 0; i < originalCoins.size(); i++) {
-            pGuiGraphics.blit(ResourceLocation.parse("textures/gui/container/villager2.png"), x + (originalCoins.get(i).getCount() > 9 ? 14 : 11), y + 3, 0, 176, 9, 2, 512, 256);
+            pGuiGraphics.blit(ResourceLocation.parse("container/villager/discount_strikethrough.png"), x + (originalCoins.get(i).getCount() > 9 ? 14 : 11), y + 3, 0, 176, 9, 2, 512, 256);
             pGuiGraphics.renderItem(ItemOps.singleCopy(originalCoins.get(i)), x - 4, y - 5 + i * 10);
         }
 

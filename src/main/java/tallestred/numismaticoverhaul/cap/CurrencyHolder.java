@@ -1,65 +1,35 @@
 package tallestred.numismaticoverhaul.cap;
 
-import tallestred.numismaticoverhaul.currency.CurrencyConverter;
-import tallestred.numismaticoverhaul.item.CoinItem;
-import tallestred.numismaticoverhaul.network.NetworkHandler;
-import dev._100media.capabilitysyncer.core.PlayerCapability;
-import dev._100media.capabilitysyncer.network.EntityCapabilityStatusPacket;
-import dev._100media.capabilitysyncer.network.SimpleEntityCapabilityStatusPacket;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.simple.SimpleChannel;
+import tallestred.numismaticoverhaul.currency.CurrencyConverter;
+import tallestred.numismaticoverhaul.init.DataAttachmentInit;
+import tallestred.numismaticoverhaul.item.CoinItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyHolder extends PlayerCapability {
-
-    private long value;
-    private final List<Long> transactions;
-
-    protected CurrencyHolder(Player player) {
-        super(player);
-        this.transactions = new ArrayList<Long>();
+public class CurrencyHolder  {
+    public static long getValue(Player player) {
+        return player.getData(DataAttachmentInit.VALUE.get());
     }
 
-    public long getValue() {
-        return value;
+    public static void setValue(Player player, long value) {
+        player.setData(DataAttachmentInit.VALUE.get(), value);
+    }
+    public static void silentModify(Player player, long value) {
+        setValue(player,getValue(player) + value);
+    }
+    public static Long popTransaction(ArrayList<Long> transactions) {
+        return transactions.remove(transactions.size() - 1);
+    }
+    public static void pushTransaction(ArrayList<Long> transactions, long value) {
+        transactions.add(value);
     }
 
-    public void setValue(long value) {
-        this.value = value;
-        updateTracking();
-    }
-    public void silentModify(long value) {
-        setValue(this.value + value);
-    }
-    public Long popTransaction() {
-        return this.transactions.remove(this.transactions.size() - 1);
-    }
-    public void pushTransaction(long value) {
-        this.transactions.add(value);
-    }
-    @Override
-    public CompoundTag serializeNBT(boolean savingToDisk) {
-        CompoundTag tag = new CompoundTag();
-        tag.putLong("value", value);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt, boolean readingFromDisk) {
-        value = nbt.getLong("value");
-    }
-
-    @Override
-    public EntityCapabilityStatusPacket createUpdatePacket() {
-        return new SimpleEntityCapabilityStatusPacket(entity.getId(), CurrencyHolderAttacher.EXAMPLE_RL, this);
-    }
-    public void modify(long value) {
-        setValue(this.value + value);
+    public static void modify(Player player, long value) {
+        setValue(player, getValue(player) + value);
 
         long tempValue = value < 0 ? -value : value;
 
@@ -77,12 +47,9 @@ public class CurrencyHolder extends PlayerCapability {
 
         player.displayClientMessage(message, true);
     }
-    @Override
-    public SimpleChannel getNetworkChannel() {
-        return NetworkHandler.INSTANCE;
-    }
-    public void commitTransactions() {
-        this.modify(this.transactions.stream().mapToLong(Long::longValue).sum());
-        this.transactions.clear();
+
+    public static void commitTransactions(Player player) {
+        modify(player, player.getData(DataAttachmentInit.TRANSACTIONS.get()).stream().mapToLong(Long::longValue).sum());
+        player.getData(DataAttachmentInit.TRANSACTIONS.get()).clear();
     }
 }

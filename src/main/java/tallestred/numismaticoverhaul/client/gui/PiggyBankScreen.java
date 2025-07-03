@@ -1,12 +1,12 @@
 package tallestred.numismaticoverhaul.client.gui;
 
+import io.wispforest.owo.ui.base.BaseUIModelHandledScreen;
+import io.wispforest.owo.ui.base.BaseUIModelScreen;
+import io.wispforest.owo.ui.component.TextureComponent;
+import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.core.Sizing;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.block.PiggyBankScreenHandler;
-import tallestred.numismaticoverhaul.owostuff.ui.base.BaseUIModelHandledScreen;
-import tallestred.numismaticoverhaul.owostuff.ui.base.BaseUIModelScreen;
-import tallestred.numismaticoverhaul.owostuff.ui.component.TextureComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.container.FlowLayout;
-import tallestred.numismaticoverhaul.owostuff.ui.core.Sizing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

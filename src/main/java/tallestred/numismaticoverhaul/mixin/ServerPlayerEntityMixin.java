@@ -1,10 +1,9 @@
 package tallestred.numismaticoverhaul.mixin;
 
+import io.wispforest.owo.ops.ItemOps;
 import tallestred.numismaticoverhaul.cap.CurrencyHolder;
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
 import tallestred.numismaticoverhaul.config.NOConfig;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
-import tallestred.numismaticoverhaul.owostuff.ops.ItemOps;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,10 +20,9 @@ public class ServerPlayerEntityMixin {
         final var world = player.level();
         if (world.isClientSide) return;
 
-        final CurrencyHolder component = CurrencyHolderAttacher.getExampleHolderUnwrap(player);
 
         var dropPercentage = NOConfig.INSTANCE.moneyDropChance.get().floatValue() * .01f;
-        int dropped = (int) (component.getValue() * dropPercentage);
+        int dropped = (int) (CurrencyHolder.getValue(player) * dropPercentage);
 
         var stacksDropped = CurrencyConverter.getAsValidStacks(dropped);
         for (var drop : stacksDropped) {
@@ -33,7 +31,7 @@ public class ServerPlayerEntityMixin {
             }
         }
 
-        component.modify(-dropped);
+        CurrencyHolder.modify(player, -dropped);
     }
 
 }

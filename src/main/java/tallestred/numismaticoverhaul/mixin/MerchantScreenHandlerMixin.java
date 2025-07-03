@@ -1,8 +1,9 @@
 package tallestred.numismaticoverhaul.mixin;
 
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.cap.CurrencyHolder;
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
+import tallestred.numismaticoverhaul.init.DataAttachmentInit;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import tallestred.numismaticoverhaul.item.CoinItem;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
@@ -27,31 +28,31 @@ public class MerchantScreenHandlerMixin {
     @Final
     private Merchant trader;
 
-    @Redirect(method = "moveFromInventoryToPaymentSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameItemSameTags(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
+    @Redirect(method = "moveFromInventoryToPaymentSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isSameItemSameComponents(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
     public boolean isSameItemSameTags(ItemStack stack1, ItemStack stack2) {
         if (stack1.getItem() instanceof CoinItem) {
             return stack1.getItem() == stack2.getItem();
         }
-        return ItemStack.isSameItemSameTags(stack1, stack2);
+        return ItemStack.isSameItemSameComponents(stack1, stack2);
     }
 
     //Autofill with coins from the player's purse if the trade requires it
     //Injected at TAIL to let normal autofill run and fill up if anything is missing
     @Inject(method = "moveFromInventoryToPaymentSlot", at = @At("TAIL"))
-    public void autofillOverride(int slot, ItemStack stack, CallbackInfo ci) {
+    public void autofillOverride(int slot, ItemCost payment, CallbackInfo ci) {
         MerchantMenu handler = (MerchantMenu) (Object) this;
-        CurrencyHolder playerBalance = CurrencyHolderAttacher.getExampleHolderUnwrap(((Inventory) handler.getSlot(3).container).player);
-
+        Player player = ((Inventory) handler.getSlot(3).container).player;
+        ItemStack stack = payment.itemStack();
         if (stack.getItem() instanceof CoinItem) {
-            numismatic$autofillWithCoins(slot, stack, handler, playerBalance);
+            numismatic$autofillWithCoins(slot, stack, handler);
         } else if (stack.getItem() == ItemInit.MONEY_BAG.get()) {
-            autofillWithMoneyBag(slot, stack, handler, playerBalance);
+            autofillWithMoneyBag(slot, stack, handler);
         }
 
-        if (slot == 1) playerBalance.commitTransactions();
+        if (slot == 1) CurrencyHolder.commitTransactions(player);
     }
 
-    private static void numismatic$autofillWithCoins(int slot, ItemStack stack, MerchantMenu handler, CurrencyHolder playerBalance) {
+    private static void numismatic$autofillWithCoins(int slot, ItemStack stack, MerchantMenu handler) {
         //See how much is required and how much was already autofilled
         long requiredCurrency = ((CoinItem) stack.getItem()).currency.getRawValue(stack.getCount());
         long presentCurrency = ((CoinItem) stack.getItem()).currency.getRawValue(handler.getSlot(slot).getItem().getCount());
@@ -62,15 +63,16 @@ public class MerchantScreenHandlerMixin {
         long neededCurrency = requiredCurrency - presentCurrency;
 
         //Is that even possible?
-        if (!(neededCurrency <= playerBalance.getValue())) return;
+        Player player = ((Inventory) handler.getSlot(3).container).player;
+        if (!(neededCurrency <= CurrencyHolder.getValue(player))) return;
 
-        playerBalance.pushTransaction(-neededCurrency);
+        CurrencyHolder.pushTransaction(player.getData(DataAttachmentInit.TRANSACTIONS.get()), -neededCurrency);
 
         handler.slots.get(slot).set(stack.copy());
     }
 
-    private static void autofillWithMoneyBag(int slot, ItemStack stack, MerchantMenu handler, CurrencyHolder playerBalance) {
-        if (ItemStack.isSameItemSameTags(stack, handler.getSlot(slot).getItem())) return;
+    private static void autofillWithMoneyBag(int slot, ItemStack stack, MerchantMenu handler) {
+        if (ItemStack.isSameItemSameComponents(stack, handler.getSlot(slot).getItem())) return;
         Player player = ((Inventory) handler.getSlot(3).container).player;
 
         //See how much is required and how much in present in the player's inventory
@@ -81,13 +83,13 @@ public class MerchantScreenHandlerMixin {
         long neededCurrency = requiredCurrency - availableCurrencyInPlayerInventory;
 
         //Is that even possible?
-        if (neededCurrency > playerBalance.getValue()) return;
+        if (neededCurrency > CurrencyHolder.getValue(player)) return;
 
         if (neededCurrency <= 0) {
             CurrencyHelper.deduceFromInventory(player, requiredCurrency);
         } else {
             CurrencyHelper.deduceFromInventory(player, availableCurrencyInPlayerInventory);
-            playerBalance.pushTransaction(-neededCurrency);
+            CurrencyHolder.pushTransaction(player.getData(DataAttachmentInit.TRANSACTIONS.get()), -neededCurrency);
         }
 
         handler.slots.get(slot).set(stack.copy());

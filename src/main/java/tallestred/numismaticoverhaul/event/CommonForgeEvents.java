@@ -1,5 +1,12 @@
 package tallestred.numismaticoverhaul.event;
 
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import net.neoforged.neoforge.event.village.WandererTradesEvent;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.villagers.data.NumismaticVillagerTradesRegistry;
 import tallestred.numismaticoverhaul.villagers.data.VillagerTradesResourceListener;
@@ -7,17 +14,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerTrades;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.village.VillagerTradesEvent;
-import net.minecraftforge.event.village.WandererTradesEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
 import java.util.HashMap;
 
-@Mod.EventBusSubscriber(modid = NumismaticOverhaul.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = NumismaticOverhaul.MODID)
 public class CommonForgeEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

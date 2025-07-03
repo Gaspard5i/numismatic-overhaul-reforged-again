@@ -1,6 +1,9 @@
 package tallestred.numismaticoverhaul.block;
 
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.*;
 import tallestred.numismaticoverhaul.init.BlockInit;
 import tallestred.numismaticoverhaul.init.SoundInit;
 import tallestred.numismaticoverhaul.init.TagInit;
@@ -19,10 +22,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,6 +40,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public class PiggyBankBlock extends HorizontalDirectionalBlock implements EntityBlock {
+    public static final MapCodec<PiggyBankBlock> CODEC = simpleCodec(PiggyBankBlock::new);
 
     private static final VoxelShape NORTH_SHAPE = Stream.of(
             Block.box(7, 2, 4, 9, 4, 5),
@@ -78,8 +78,12 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
             Block.box(5, 0, 5, 7, 1, 6)
     ).reduce(Shapes::or).get();
 
+    public PiggyBankBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+    }
+
     public PiggyBankBlock() {
-        super(BlockBehaviour.Properties.copy(Blocks.TERRACOTTA));
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.TERRACOTTA));
     }
 
     @Override
@@ -104,14 +108,12 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!world.isClientSide) {
             if (world.getBlockEntity(pos) instanceof MenuProvider factory) {
                 player.openMenu(factory);
             }
         }
-
         return InteractionResult.SUCCESS;
     }
 
@@ -124,7 +126,7 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
 
             world.removeBlock(pos, false);
 
-            world.playSound(null,pos, SoundInit.PIGGY_BANK_BREAK.get(), SoundSource.BLOCKS,1,1);
+            world.playSound(null, pos, SoundInit.PIGGY_BANK_BREAK.get(), SoundSource.BLOCKS, 1, 1);
 //            NumismaticOverhaul.PIGGY_BANK_BROKEN.spawn(world, Vec3.atLowerCornerOf(pos), Math.round(fallDistance));
         }
 
@@ -132,27 +134,27 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
     }
 
     @Override
-    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
         if (world.getBlockEntity(pos) instanceof PiggyBankBlockEntity piggyBank && player.isCreative() && !world.isClientSide && !piggyBank.inventory().stream().allMatch(ItemStack::isEmpty)) {
 
             var stack = new ItemStack(BlockInit.PIGGY_BANK.get());
-            piggyBank.saveToItem(stack);
+            piggyBank.saveToItem(stack, world.registryAccess());
 
             ItemEntity var = new ItemEntity(world, pos.getX() + .5d, pos.getY() + .5d, pos.getZ() + .5d, stack);
             var.setDefaultPickUpDelay();
             world.addFreshEntity(var);
         }
-
-        super.playerWillDestroy(world, pos, state, player);
+        return super.playerWillDestroy(world, pos, state, player);
     }
-//todo: particles
+
+    //todo: particles
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof PiggyBankBlockEntity piggyBank) {
             var tool = builder.getOptionalParameter(LootContextParams.TOOL);
-            if (tool != null && tool.hasCustomHoverName() && Objects.equals(tool.getHoverName().getString(), "Hammer")) {
+            if (tool != null && tool.has(DataComponents.CUSTOM_NAME) && Objects.equals(tool.getHoverName().getString(), "Hammer")) {
 
-                builder.getLevel().playSound(null, piggyBank.getBlockPos(), SoundInit.PIGGY_BANK_BREAK.get(), SoundSource.BLOCKS,1,1);
+                builder.getLevel().playSound(null, piggyBank.getBlockPos(), SoundInit.PIGGY_BANK_BREAK.get(), SoundSource.BLOCKS, 1, 1);
 //                NumismaticOverhaul.PIGGY_BANK_BROKEN.spawn(piggyBank.getLevel(), Vec3.atLowerCornerOf(piggyBank.getBlockPos()), 5);
 
                 var drops = new ArrayList<>(super.getDrops(state, builder));
@@ -173,5 +175,10 @@ public class PiggyBankBlock extends HorizontalDirectionalBlock implements Entity
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new PiggyBankBlockEntity(pos, state);
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+        return CODEC;
     }
 }

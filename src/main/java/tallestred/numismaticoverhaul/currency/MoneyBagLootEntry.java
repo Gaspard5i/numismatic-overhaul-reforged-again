@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 import java.util.function.Consumer;
 
-public class MoneyBagLootEntry extends LootPoolSingletonContainer {
+/*public class MoneyBagLootEntry extends LootPoolSingletonContainer {
 
     private final int min;
     private final int max;
@@ -61,4 +61,4 @@ public class MoneyBagLootEntry extends LootPoolSingletonContainer {
             return new MoneyBagLootEntry(mix, max, i, j, lootConditions, lootFunctions);
         }
     }
-}
+}*/

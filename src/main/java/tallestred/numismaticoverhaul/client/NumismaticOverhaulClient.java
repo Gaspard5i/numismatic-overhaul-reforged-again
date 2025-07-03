@@ -1,36 +1,44 @@
 package tallestred.numismaticoverhaul.client;
 
 import com.mojang.datafixers.util.Either;
+import io.wispforest.owo.mixin.ui.layers.HandledScreenAccessor;
+import io.wispforest.owo.ui.core.Positioning;
+import io.wispforest.owo.ui.layers.Layers;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.MerchantScreen;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.client.gui.CurrencyTooltipComponent;
 import tallestred.numismaticoverhaul.client.gui.PiggyBankScreen;
 import tallestred.numismaticoverhaul.client.gui.ShopScreen;
+import tallestred.numismaticoverhaul.client.gui.purse.PurseLayerElement;
+import tallestred.numismaticoverhaul.config.NOClientConfig;
 import tallestred.numismaticoverhaul.init.BlockInit;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import tallestred.numismaticoverhaul.init.MenuInit;
 import tallestred.numismaticoverhaul.item.CurrencyTooltipData;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RenderTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import tallestred.numismaticoverhaul.client.gui.purse.PurseLayerContainer;
+import tallestred.numismaticoverhaul.mixin.LayerInstanceAccessor;
 
-@Mod.EventBusSubscriber(modid = NumismaticOverhaul.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod(value = NumismaticOverhaul.MODID, dist = Dist.CLIENT)
+@EventBusSubscriber()
 public class NumismaticOverhaulClient {
 
     @SubscribeEvent
     public static void onInitializeClient(FMLClientSetupEvent event) {
-
-        event.enqueueWork(() -> MenuScreens.register(MenuInit.SHOP.get(), ShopScreen::new));
-        event.enqueueWork(() -> MenuScreens.register(MenuInit.PIGGY_BANK.get(), PiggyBankScreen::new));
-
         ItemProperties.register(ItemInit.BRONZE_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
         ItemProperties.register(ItemInit.SILVER_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
         ItemProperties.register(ItemInit.GOLD_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
@@ -44,16 +52,59 @@ public class NumismaticOverhaulClient {
 
             return 0;
         });
+        Layers.add(
+                PurseLayerContainer::new,
+                new PurseLayerElement<>((instance, component) -> {
+                    instance.aggressivePositioning = true;
+                    ((LayerInstanceAccessor) instance).numismatic$getLayoutUpdaters().add(() -> {
+                        if (instance.screen.isInventoryOpen()) {
+                            component.positioning(Positioning.absolute(
+                                    ((HandledScreenAccessor) instance.screen).owo$getRootX() + 38 + NOClientConfig.CLIENT.creativePursePositionX.get(),
+                                    ((HandledScreenAccessor) instance.screen).owo$getRootY() + 4 + NOClientConfig.CLIENT.creativePursePositionY.get())
+                            );
+                        } else {
+                            component.positioning(Positioning.absolute(-50, -50));
+                        }
+                    });
+                }),
+                CreativeModeInventoryScreen.class
+        );
+        Layers.add(
+                PurseLayerContainer::new,
+                new PurseLayerElement<>((instance, component) -> {
+                    instance.aggressivePositioning = true;
+                    instance.alignComponentToHandledScreenCoordinates(
+                            component,
+                            160 + NOClientConfig.CLIENT.survivalPursePositionY.get(),
+                            5 + NOClientConfig.CLIENT.survivalPursePositionY.get()
+                    );
+                }),
+                InventoryScreen.class
+        );
+        Layers.add(
+                PurseLayerContainer::new,
+                new PurseLayerElement<>((instance, component) -> instance.alignComponentToHandledScreenCoordinates(
+                        component,
+                        260 + NOClientConfig.CLIENT.merchantPursePositionX.get(),
+                        5 + NOClientConfig.CLIENT.merchantPursePositionY.get()
+                )),
+                MerchantScreen.class
+        );
+    }
+
+    @SubscribeEvent
+    public static void registerMenus(RegisterMenuScreensEvent event) {
+        event.register(MenuInit.SHOP.get(), ShopScreen::new);
+        event.register(MenuInit.PIGGY_BANK.get(), PiggyBankScreen::new);
     }
 
 
     @SubscribeEvent
     public static void registerBlockEntity(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BlockInit.SHOP_BE.get(), ShopBlockEntityRender::new);
-
     }
 
-    @Mod.EventBusSubscriber(modid = NumismaticOverhaul.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    @EventBusSubscriber(value = Dist.CLIENT)
     static class ForgeEvents {
         @SubscribeEvent
         public static void onToolTip(RenderTooltipEvent.GatherComponents event) {

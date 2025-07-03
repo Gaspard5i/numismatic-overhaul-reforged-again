@@ -1,6 +1,6 @@
 package tallestred.numismaticoverhaul.item;
 
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.currency.Currency;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -42,7 +42,7 @@ public class CoinItem extends Item implements CurrencyItem {
         long[] values = currencyItem.getCombinedValue(otherStack);
         values[this.currency.ordinal()] += clickedStack.getCount();
 
-        final var stack = MoneyBagItem.createCombined(values);
+        final var stack = MoneyBagItem.fromValues(values);
         if (!slot.mayPlace(stack)) return false;
 
         slot.set(stack);
@@ -58,7 +58,7 @@ public class CoinItem extends Item implements CurrencyItem {
         long rawValue = ((CoinItem) clickedStack.getItem()).currency.getRawValue(clickedStack.getCount());
 
         if (!world.isClientSide) {
-            CurrencyHolderAttacher.getExampleHolderUnwrap(user).modify(rawValue);
+            CurrencyHolder.modify(user, rawValue);
         }
 
         return InteractionResultHolder.success(ItemStack.EMPTY);
@@ -66,8 +66,7 @@ public class CoinItem extends Item implements CurrencyItem {
 
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-        return Optional.of(new CurrencyTooltipData(this.currency.getRawValue(stack.getCount()),
-                CurrencyItem.hasOriginalValue(stack) ? CurrencyItem.getOriginalValue(stack) : -1));
+        return Optional.of(new CurrencyTooltipData(this.currency.getRawValue(stack.getCount()), -1));
     }
 
     @Override

@@ -1,48 +1,47 @@
 package tallestred.numismaticoverhaul.network;
 
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import tallestred.numismaticoverhaul.NumismaticOverhaul;
+import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
-import dev._100media.capabilitysyncer.network.IPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.simple.SimpleChannel;
 
-public record RequestPurseActionC2SPacket(Action action, long value) implements IPacket {
+public record RequestPurseActionC2SPacket(Action action, long value) implements CustomPacketPayload {
+    public static final Type<RequestPurseActionC2SPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NumismaticOverhaul.MODID, "following"));
+    public static final StreamCodec<FriendlyByteBuf, RequestPurseActionC2SPacket> STREAM_CODEC = StreamCodec.composite(new EnumStreamCodec<>(Action.class), RequestPurseActionC2SPacket::action,
+            ByteBufCodecs.VAR_LONG, RequestPurseActionC2SPacket::value,
+            RequestPurseActionC2SPacket::new
+    );
 
-    public RequestPurseActionC2SPacket(FriendlyByteBuf packetBuf) {
-        this(packetBuf.readEnum(Action.class), packetBuf.readLong());
-    }
-    public void handle(NetworkEvent.Context context) {
-        final ServerPlayer player = context.getSender();
+    public static void handle(RequestPurseActionC2SPacket packet, IPayloadContext context) {
+        final ServerPlayer player = (ServerPlayer) context.player();
 
         if (player.containerMenu instanceof InventoryMenu || isInventorioHandler(player)) {
-            switch (action) {
-                case STORE_ALL -> CurrencyHolderAttacher.getExampleHolderUnwrap(player).modify(CurrencyHelper.getMoneyInInventory(player, true));
+
+            switch (packet.action) {
+                case STORE_ALL -> CurrencyHolder.modify(player, CurrencyHelper.getMoneyInInventory(player, true));
                 case EXTRACT -> {
                     //Check if we can actually extract this much money to prevent cheeky packet forgery
-                    if (CurrencyHolderAttacher.getExampleHolderUnwrap(player).getValue() < value) return;
+                    if (CurrencyHolder.getValue(player) < packet.value()) return;
 
-                    CurrencyConverter.getAsItemStackList(value).forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
-                    CurrencyHolderAttacher.getExampleHolderUnwrap(player).modify(-value);
+                    CurrencyConverter.getAsItemStackList(packet.value()).forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
+                    CurrencyHolder.modify(player, -packet.value());
                 }
                 case EXTRACT_ALL -> {
-                    CurrencyConverter.getAsValidStacks(CurrencyHolderAttacher.getExampleHolderUnwrap(player).getValue())
+                    CurrencyConverter.getAsValidStacks(CurrencyHolder.getValue(player))
                             .forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
 
-                    CurrencyHolderAttacher.getExampleHolderUnwrap(player).modify(-CurrencyHolderAttacher.getExampleHolderUnwrap(player).getValue());
+                    CurrencyHolder.modify(player, -CurrencyHolder.getValue(player));
                 }
             }
         }
-    }
-
-    @Override
-    public void write(FriendlyByteBuf packetBuf) {
-        packetBuf.writeEnum(action);
-        packetBuf.writeLong(value);
     }
 
     private static boolean isInventorioHandler(ServerPlayer player) {
@@ -63,11 +62,12 @@ public record RequestPurseActionC2SPacket(Action action, long value) implements 
         return new RequestPurseActionC2SPacket(Action.EXTRACT, amount);
     }
 
-    public enum Action {
-        STORE_ALL, EXTRACT, EXTRACT_ALL
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
-    public static void register(SimpleChannel channel, int id) {
-        IPacket.register(channel, id, NetworkDirection.PLAY_TO_SERVER, RequestPurseActionC2SPacket.class, RequestPurseActionC2SPacket::new);
+    public enum Action {
+        STORE_ALL, EXTRACT, EXTRACT_ALL
     }
 }

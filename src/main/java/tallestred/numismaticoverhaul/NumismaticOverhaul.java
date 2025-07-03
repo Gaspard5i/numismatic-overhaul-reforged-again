@@ -1,17 +1,30 @@
 package tallestred.numismaticoverhaul;
 
 
-import com.mojang.serialization.Codec;
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import com.mojang.serialization.MapCodec;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import tallestred.numismaticoverhaul.config.NOClientConfig;
 import tallestred.numismaticoverhaul.config.NOConfig;
-import tallestred.numismaticoverhaul.currency.MoneyBagLootEntry;
-import tallestred.numismaticoverhaul.datagen.ModLootTableProvider;
-import tallestred.numismaticoverhaul.init.*;
 import tallestred.numismaticoverhaul.init.*;
 import tallestred.numismaticoverhaul.loot_stuff.AddItemModifier;
 import tallestred.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
-import tallestred.numismaticoverhaul.network.NetworkHandler;
+import tallestred.numismaticoverhaul.network.RequestPurseActionC2SPacket;
+import tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket;
+import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 import tallestred.numismaticoverhaul.villagers.json.VillagerTradesHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.data.DataGenerator;
@@ -20,55 +33,45 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Mod(NumismaticOverhaul.MODID)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class NumismaticOverhaul {
     public static final String MODID = "numismaticoverhaul";
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final LootPoolEntryType MONEY_BAG_ENTRY = new LootPoolEntryType(new MoneyBagLootEntry.Serializer());
-    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIER_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
-    public static final RegistryObject<Codec<? extends IGlobalLootModifier>> ADD_ITEM =
+    //public static final LootPoolEntryType MONEY_BAG_ENTRY = new LootPoolEntryType(new MoneyBagLootEntry.Serializer());
+    public static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> LOOT_MODIFIER_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
+    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<? extends IGlobalLootModifier>> ADD_ITEM =
             LOOT_MODIFIER_SERIALIZERS.register("add_item", AddItemModifier.CODEC);
-    public static final RegistryObject<Codec<? extends IGlobalLootModifier>> MONEY_BAG =
+    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<? extends IGlobalLootModifier>> MONEY_BAG =
             LOOT_MODIFIER_SERIALIZERS.register("money_bag", MoneyBagLootModifier.CODEC);
 
-    public NumismaticOverhaul() {
-        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        NOConfig.loadConfig(NOConfig.CONFIG_SPEC, FMLPaths.CONFIGDIR.get().resolve(MODID + "-common.toml").toString());
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, NOConfig.CONFIG_SPEC);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, NOClientConfig.CLIENT_SPEC);
+    public NumismaticOverhaul(IEventBus bus, Dist dist, ModContainer container) {
+        container.registerConfig(ModConfig.Type.COMMON, NOConfig.CONFIG_SPEC);
+        container.registerConfig(ModConfig.Type.CLIENT, NOClientConfig.CLIENT_SPEC);
         LOOT_MODIFIER_SERIALIZERS.register(bus);
         ItemInit.ITEMS.register(bus);
         EntityInit.ENTITIES.register(bus);
         BlockInit.BLOCKS.register(bus);
         BlockInit.BLOCK_ENTITIES.register(bus);
         CreativeTabInit.TABS.register(bus);
-        CurrencyHolderAttacher.register();
         MenuInit.MENU_TYPES.register(bus);
+        DataAttachmentInit.ATTACHMENT_TYPES.register(bus);
+        ItemComponentInit.DATA_COMPONENTS.register(bus);
         VillagerTradesHandler.registerDefaultAdapters();
     }
 
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
-        NetworkHandler.register();
+    }
+
+    @SubscribeEvent
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar reg = event.registrar(MODID).versioned("2.0.2");
+        reg.playToServer(RequestPurseActionC2SPacket.TYPE, RequestPurseActionC2SPacket.STREAM_CODEC, RequestPurseActionC2SPacket::handle);
+        reg.playToClient(UpdateShopScreenS2CPacket.TYPE, UpdateShopScreenS2CPacket.STREAM_CODEC, UpdateShopScreenS2CPacket::handle);
+        reg.playToServer(ShopScreenHandlerRequestC2SPacket.TYPE, ShopScreenHandlerRequestC2SPacket.STREAM_CODEC, ShopScreenHandlerRequestC2SPacket::handle);
     }
 
     @SubscribeEvent
@@ -77,7 +80,7 @@ public class NumismaticOverhaul {
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         PackOutput packOutput = event.getGenerator().getPackOutput();
         //   generator.addProvider(event.includeServer(), new ModRecipeProvider(generator));
-        generator.addProvider(event.includeServer(), new ModLootTableProvider(packOutput));
+        //generator.addProvider(event.includeServer(), new ModLootTableProvider(packOutput));
         //   generator.addProvider(event.includeServer(), new ModSoundProvider(generator, MODID, existingFileHelper));
         //    generator.addProvider(event.includeClient(), new ModItemModelProvider(generator, existingFileHelper));
         //  generator.addProvider(event.includeClient(), new ModBlockStateProvider(generator, existingFileHelper));

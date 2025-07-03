@@ -1,6 +1,9 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
@@ -11,11 +14,11 @@ import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 public class SellPotionContainerItemAdapter extends TradeJsonAdapter {
 
@@ -55,11 +58,12 @@ public class SellPotionContainerItemAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            List<Potion> list = BuiltInRegistries.POTION.stream().filter((potion) -> !potion.getEffects().isEmpty() && PotionBrewing.isBrewablePotion(potion)).toList();
-
+            List<Potion> list = BuiltInRegistries.POTION.stream().filter((potion) -> {
+                return !potion.getEffects().isEmpty() && entity.level().potionBrewing().isBrewablePotion(BuiltInRegistries.POTION.createIntrusiveHolder(potion));
+            }).toList();
             Potion potion = list.get(random.nextInt(list.size()));
-            ItemStack itemStack2 = PotionUtils.setPotion(containerItem.copy(), potion);
-            return new MerchantOffer(CurrencyHelper.getClosest(price), buyItem, itemStack2, this.maxUses, this.experience, this.priceMultiplier);
+            ItemStack itemStack2 = PotionContents.createItemStack(containerItem.getItem(), BuiltInRegistries.POTION.createIntrusiveHolder(potion));
+            return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), Optional.of(new ItemCost(buyItem.getItem(), buyItem.getCount())), itemStack2, this.maxUses, this.experience, this.priceMultiplier);
         }
     }
 }

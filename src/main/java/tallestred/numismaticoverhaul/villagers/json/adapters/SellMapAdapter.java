@@ -1,9 +1,12 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import io.wispforest.owo.util.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
-import tallestred.numismaticoverhaul.owostuff.util.RegistryAccess;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
 import net.minecraft.core.Holder;
@@ -22,12 +25,12 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Optional;
 
 public class SellMapAdapter extends TradeJsonAdapter {
 
@@ -77,19 +80,19 @@ public class SellMapAdapter extends TradeJsonAdapter {
             if (result == null) return null;
             final var blockPos = result.getFirst();
 
-            var iconType = Type.TARGET_X;
+            var iconType = MapDecorationTypes.TARGET_X;
             if (feature.is(BuiltinStructures.OCEAN_MONUMENT.location()))
-                iconType = Type.MONUMENT;
+                iconType = MapDecorationTypes.OCEAN_MONUMENT;
             if (feature.is(BuiltinStructures.WOODLAND_MANSION.location()))
-                iconType = Type.MANSION;
+                iconType = MapDecorationTypes.WOODLAND_MANSION;
             if (feature.is(BuiltinStructures.PILLAGER_OUTPOST.location()))
-                iconType = Type.TARGET_POINT;
+                iconType = MapDecorationTypes.TARGET_POINT;
 
             ItemStack itemStack = MapItem.create(serverWorld, blockPos.getX(), blockPos.getZ(), (byte) 2, true, true);
             MapItem.renderBiomePreviewMap(serverWorld, itemStack);
             MapItemSavedData.addTargetDecoration(itemStack, blockPos, "+", iconType);
-            itemStack.setHoverName(Component.translatable("filled_map." + feature.unwrapKey().get().location().getPath().toLowerCase(Locale.ROOT)));
-            return new MerchantOffer(CurrencyHelper.getClosest(price), new ItemStack(Items.MAP), itemStack, this.maxUses, this.experience, multiplier);
+            itemStack.set(DataComponents.CUSTOM_NAME, Component.translatable("filled_map." + feature.unwrapKey().get().location().getPath().toLowerCase(Locale.ROOT)));
+            return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), Optional.of(new ItemCost(Items.MAP)), itemStack, this.maxUses, this.experience, multiplier);
         }
     }
 }

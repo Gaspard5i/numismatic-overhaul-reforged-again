@@ -1,10 +1,10 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import io.wispforest.owo.ops.TextOps;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.currency.Currency;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
-import tallestred.numismaticoverhaul.owostuff.ops.TextOps;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
 import net.minecraft.ChatFormatting;
@@ -71,7 +71,7 @@ public class SellTagAdapter extends TradeJsonAdapter {
             }
 
             final var sellStack = new ItemStack(entries.get(random.nextInt(entries.size())).value(), this.count);
-            return new MerchantOffer(CurrencyHelper.getClosest(price), sellStack, this.maxUses, this.experience, multiplier);
+            return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), sellStack, this.maxUses, this.experience, multiplier);
         }
     }
 

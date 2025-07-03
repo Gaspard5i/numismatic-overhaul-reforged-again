@@ -1,6 +1,7 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
@@ -43,7 +44,7 @@ public class BuyStackAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            return new MerchantOffer(buy, CurrencyHelper.getClosest(price), this.maxUses, this.experience, this.multiplier);
+            return new MerchantOffer(new ItemCost(buy.getItem(), buy.getCount()), CurrencyHelper.getClosest(price), this.maxUses, this.experience, this.multiplier);
         }
     }
 }

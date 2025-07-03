@@ -56,9 +56,8 @@ public class SellSusStewAdapter extends TradeJsonAdapter {
         @Override
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
             ItemStack susStew = new ItemStack(Items.SUSPICIOUS_STEW, 1);
-            SuspiciousStewItem.saveMobEffect(susStew, this.effect, this.duration);
 
-            return new MerchantOffer(CurrencyHelper.getClosest(price), susStew, this.maxUses, this.experience, this.multiplier);
+            return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), susStew, this.maxUses, this.experience, this.multiplier);
         }
     }
 }

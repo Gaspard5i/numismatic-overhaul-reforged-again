@@ -1,9 +1,10 @@
 package tallestred.numismaticoverhaul.item;
 
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.currency.CurrencyResolver;
+import tallestred.numismaticoverhaul.init.ItemComponentInit;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -18,60 +19,52 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import tallestred.numismaticoverhaul.item.data_components.MoneyBagComponent;
 
 import java.util.Optional;
 
+import static tallestred.numismaticoverhaul.init.ItemComponentInit.MONEY_BAG_COMPONENT;
+
 public class MoneyBagItem extends Item implements CurrencyItem {
 
-    public MoneyBagItem() {
-        super(new Properties().stacksTo(1));
+    public MoneyBagItem(Item.Properties properties) {
+        super(properties);
     }
 
-    @Override
-    public ItemStack getDefaultInstance() {
-        var defaultStack = super.getDefaultInstance();
-        defaultStack.getOrCreateTag().putLong("Value", 0L);
-        return defaultStack;
-    }
 
-    public static ItemStack create(long value) {
+    public static ItemStack create(ItemStack firstStack, ItemStack otherStack) {
         var stack = new ItemStack(ItemInit.MONEY_BAG.get());
-        stack.getOrCreateTag().putLong("Value", value);
+        if (firstStack.has(MONEY_BAG_COMPONENT) && otherStack.has(MONEY_BAG_COMPONENT)) {
+            stack.set(MONEY_BAG_COMPONENT, MoneyBagComponent.combine(firstStack, otherStack));
+        } else if (firstStack.getItem() instanceof CurrencyItem coins && otherStack.getItem() instanceof CurrencyItem coins2) {
+            var values1 = coins.getCombinedValue(firstStack);
+            var values2 = coins2.getCombinedValue(otherStack);
+            stack.set(MONEY_BAG_COMPONENT, MoneyBagComponent.combine(values1, values2));
+        }
         return stack;
     }
 
-    public static ItemStack createCombined(long[] values) {
+    public static ItemStack fromValues(long[] values) {
         var stack = new ItemStack(ItemInit.MONEY_BAG.get());
-        stack.getOrCreateTag().putLongArray("Values", values);
-        stack.getOrCreateTag().putBoolean("Combined", true);
+        stack.set(MONEY_BAG_COMPONENT, MoneyBagComponent.of(values)
+        );
+        return stack;
+    }
+
+    public static ItemStack fromRawValue(long value) {
+        var stack = new ItemStack(ItemInit.MONEY_BAG.get());
+        stack.set(MONEY_BAG_COMPONENT, MoneyBagComponent.of(value));
         return stack;
     }
 
     public long getValue(ItemStack stack) {
-        if (!stack.is(ItemInit.MONEY_BAG.get())) return 0;
-
-        if (!stack.getOrCreateTag().contains("Combined")) {
-            return stack.getTag().getLong("value");
-        } else {
-            return CurrencyResolver.combineValues(CurrencyHelper.getFromNbt(stack.getOrCreateTag(), "Values"));
-        }
+        return stack.getOrDefault(MONEY_BAG_COMPONENT, MoneyBagComponent.of(0)).value();
     }
 
     @Override
     public long[] getCombinedValue(ItemStack stack) {
-        if (!stack.getOrCreateTag().contains("Combined")) {
-            return CurrencyResolver.splitValues(stack.getTag().getLong("value"));
-        } else {
-            return CurrencyHelper.getFromNbt(stack.getOrCreateTag(), "Values");
-        }
-    }
-
-    public void setValue(ItemStack stack, long value) {
-        stack.getOrCreateTag().putLong("Value", value);
-    }
-
-    public void setCombinedValue(ItemStack stack, long[] values) {
-        stack.getOrCreateTag().putLongArray("Values", values);
+        var bagComponent = stack.getOrDefault(MONEY_BAG_COMPONENT, MoneyBagComponent.of(0));
+        return new long[]{bagComponent.bronze(), bagComponent.silver(), bagComponent.gold()};
     }
 
     @Override
@@ -79,37 +72,35 @@ public class MoneyBagItem extends Item implements CurrencyItem {
         if (slot instanceof MerchantResultSlot) return false;
 
         if (clickType == ClickAction.SECONDARY && clickedStack.getItem() == this && otherStack.isEmpty()) {
-            final var stackRepresentation = CurrencyConverter.getAsValidStacks(getCombinedValue(clickedStack));
+            var coins = getCombinedValue(clickedStack);
+            final var stackRepresentation = CurrencyConverter.getAsValidStacks(coins);
             if (stackRepresentation.isEmpty()) return false;
 
-            final var coinStack = stackRepresentation.get(0);
+            final var coinStack = stackRepresentation.getFirst();
             cursorStackReference.set(coinStack);
 
             final long[] values = getCombinedValue(clickedStack);
             values[((CoinItem) coinStack.getItem()).currency.ordinal()] -= coinStack.getCount();
 
             final long newValue = CurrencyResolver.combineValues(values);
-            final boolean canBeCompacted = values[0] < 100 && values[1] < 100 && values[2] < 100;
+            final boolean canBeCompacted = CurrencyResolver.canBeCompacted(values);
 
             if (newValue == 0) {
                 slot.set(ItemStack.EMPTY);
             } else if (canBeCompacted && CurrencyConverter.getAsValidStacks(newValue).size() == 1) {
-                slot.set(CurrencyConverter.getAsValidStacks(newValue).get(0));
+                slot.set(CurrencyConverter.getAsValidStacks(newValue).getFirst());
             } else {
-                setCombinedValue(clickedStack, values);
+                slot.set(fromValues(values));
             }
 
         } else if (clickType == ClickAction.PRIMARY) {
             if (!(otherStack.getItem() instanceof CurrencyItem currencyItem)) return false;
+            final var bag = MoneyBagItem.create(clickedStack, otherStack);
+            if (bag.getOrDefault(MONEY_BAG_COMPONENT, MoneyBagComponent.of(0)).value() == 0) return false;
+            if (!slot.mayPlace(bag)) return false;
 
-            long[] clickedValues = getCombinedValue(clickedStack);
-            long[] otherValues = currencyItem.getCombinedValue(otherStack);
-
-            for (int i = 0; i < clickedValues.length; i++) clickedValues[i] += otherValues[i];
-
-            slot.set(MoneyBagItem.createCombined(clickedValues));
-
-            cursorStackReference.set(ItemStack.EMPTY);
+            slot.set(bag);
+            return cursorStackReference.set(ItemStack.EMPTY);
         }
 
         return true;
@@ -117,25 +108,13 @@ public class MoneyBagItem extends Item implements CurrencyItem {
 
     @Override
     public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
-        return Optional.of(new CurrencyTooltipData(this.getCombinedValue(stack),
-                CurrencyItem.hasOriginalValue(stack) ? CurrencyResolver.splitValues(CurrencyItem.getOriginalValue(stack)) : new long[]{-1}));
-    }
-
-    @Override
-    public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
-        if (stack.getOrCreateTag().getBoolean("Combined")) return;
-        if (!(entity instanceof Player player)) return;
-
-        player.getInventory().removeItem(stack);
-
-        for (ItemStack toOffer : CurrencyConverter.getAsValidStacks(getValue(stack))) {
-            player.getInventory().placeItemBackInInventory(toOffer);
-        }
+        var values = this.getCombinedValue(stack);
+        return Optional.of(new CurrencyTooltipData(values, new long[]{-1}));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        CurrencyHolderAttacher.getExampleHolderUnwrap(user).modify(getValue(user.getItemInHand(hand)));
+        CurrencyHolder.modify(user, getValue(user.getItemInHand(hand)));
         user.setItemInHand(hand, ItemStack.EMPTY);
         return InteractionResultHolder.success(ItemStack.EMPTY);
     }

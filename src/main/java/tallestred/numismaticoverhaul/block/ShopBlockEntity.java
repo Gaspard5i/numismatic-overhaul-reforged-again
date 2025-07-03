@@ -1,9 +1,12 @@
 package tallestred.numismaticoverhaul.block;
 
+import io.wispforest.owo.ops.WorldOps;
+import io.wispforest.owo.util.ImplementedInventory;
+import net.minecraft.core.HolderLookup;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.init.BlockInit;
-import tallestred.numismaticoverhaul.owostuff.ops.WorldOps;
-import tallestred.numismaticoverhaul.owostuff.util.ImplementedInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -23,8 +26,6 @@ import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -116,10 +117,10 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, INVENTORY);
-        ShopOffer.writeAll(tag, offers);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, INVENTORY, registries);
+        ShopOffer.writeAll(tag, offers, registries);
         tag.putBoolean("AllowsTransfer", this.allowsTransfer);
         tag.putLong("StoredCurrency", storedCurrency);
         if (owner != null) {
@@ -128,10 +129,10 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        ContainerHelper.loadAllItems(tag, INVENTORY);
-        ShopOffer.readAll(tag, offers);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        ContainerHelper.loadAllItems(tag, INVENTORY, registries);
+        ShopOffer.readAll(tag, offers, registries);
         if (tag.contains("Owner")) {
             owner = tag.getUUID("Owner");
         }
@@ -198,9 +199,9 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = new CompoundTag();
-        this.saveAdditional(tag);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        this.saveAdditional(tag, registries);
         tag.remove("Items");
         tag.remove("StoredCurrency");
         return tag;

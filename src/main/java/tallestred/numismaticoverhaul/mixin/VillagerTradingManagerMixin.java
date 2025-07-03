@@ -1,7 +1,7 @@
 package tallestred.numismaticoverhaul.mixin;
 
+import net.neoforged.neoforge.common.VillagerTradingManager;
 import tallestred.numismaticoverhaul.villagers.data.NumismaticVillagerTradesRegistry;
-import net.minecraftforge.common.VillagerTradingManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

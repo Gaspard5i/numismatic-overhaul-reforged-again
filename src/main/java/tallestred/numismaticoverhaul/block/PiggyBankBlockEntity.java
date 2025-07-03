@@ -1,7 +1,8 @@
 package tallestred.numismaticoverhaul.block;
 
+import io.wispforest.owo.util.ImplementedInventory;
+import net.minecraft.core.HolderLookup;
 import tallestred.numismaticoverhaul.init.BlockInit;
-import tallestred.numismaticoverhaul.owostuff.util.ImplementedInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -26,17 +27,16 @@ public class PiggyBankBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
-
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
         this.inventory.clear();
-        ContainerHelper.loadAllItems(nbt, this.inventory);
+        ContainerHelper.loadAllItems(nbt, this.inventory, registries);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
-        ContainerHelper.saveAllItems(nbt, this.inventory);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.saveAdditional(nbt, registries);
+        ContainerHelper.saveAllItems(nbt, this.inventory, registries);
     }
 
     @Override

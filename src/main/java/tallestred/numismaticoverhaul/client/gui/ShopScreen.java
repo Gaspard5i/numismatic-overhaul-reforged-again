@@ -1,23 +1,23 @@
 package tallestred.numismaticoverhaul.client.gui;
 
+import io.wispforest.owo.mixin.ui.access.ButtonWidgetAccessor;
+import io.wispforest.owo.ops.TextOps;
+import io.wispforest.owo.ui.base.BaseUIModelHandledScreen;
+import io.wispforest.owo.ui.base.BaseUIModelScreen;
+import io.wispforest.owo.ui.component.ButtonComponent;
+import io.wispforest.owo.ui.component.ItemComponent;
+import io.wispforest.owo.ui.component.LabelComponent;
+import io.wispforest.owo.ui.component.TextureComponent;
+import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.container.ScrollContainer;
+import io.wispforest.owo.ui.core.Component;
+import io.wispforest.owo.ui.core.ParentComponent;
+import io.wispforest.owo.ui.util.UISounds;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.block.ShopOffer;
 import tallestred.numismaticoverhaul.block.ShopScreenHandler;
 import tallestred.numismaticoverhaul.currency.CurrencyResolver;
 import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
-import tallestred.numismaticoverhaul.owostuff.ops.TextOps;
-import tallestred.numismaticoverhaul.owostuff.ui.base.BaseUIModelHandledScreen;
-import tallestred.numismaticoverhaul.owostuff.ui.base.BaseUIModelScreen;
-import tallestred.numismaticoverhaul.owostuff.ui.component.ButtonComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.component.ItemComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.component.LabelComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.component.TextureComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.container.FlowLayout;
-import tallestred.numismaticoverhaul.owostuff.ui.container.ScrollContainer;
-import tallestred.numismaticoverhaul.owostuff.ui.core.ModComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.core.ParentComponent;
-import tallestred.numismaticoverhaul.owostuff.ui.inject.ButtonWidgetExtension;
-import tallestred.numismaticoverhaul.owostuff.ui.util.UISounds;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -33,8 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-;
 
 public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenHandler> {
 
@@ -68,7 +66,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
         leftColumn.child(makeTabButton(Items.CHEST, false, button -> selectTab(0)));
         leftColumn.child(makeTabButton(Items.EMERALD, true, button -> this.selectTab(1)));
 
-        ((ButtonWidgetExtension) rootComponent.childById(ButtonComponent.class, "extract-button")).onPress(button -> {
+        rootComponent.childById(ButtonComponent.class, "extract-button").onPress(button -> {
             this.menu.extractCurrency();
         });
 
@@ -161,10 +159,10 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
             this.titleLabelY = 69420;
 
             final var editWidget = this.model.expandTemplate(FlowLayout.class, "trade-edit-widget", Map.of());
-            ButtonComponent submitButton = editWidget.childByIdOther(ButtonComponent.class, "submit-button");
-            ButtonComponent deleteButton = editWidget.childByIdOther(ButtonComponent.class, "delete-button");
+            var submitButton = editWidget.childById(ButtonComponent.class, "submit-button");
+            var deleteButton = editWidget.childById(ButtonComponent.class, "delete-button");
 
-            EditBox priceField = editWidget.childByIdOther(EditBox.class, "price-field");
+            EditBox priceField = editWidget.childById(EditBox.class, "price-field");
             this.setFocused(priceField);
             priceField.setEditable(true);
             priceField.setCanLoseFocus(false);
@@ -226,7 +224,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
             var component = this.model.expandTemplate(FlowLayout.class, "trade-button", Map.of("price", String.valueOf(offer.getPrice())));
             component.childById(ItemComponent.class, "item-display").stack(offer.getSellStack());
-            ((ButtonWidgetExtension) component.childByIdOther(Button.class, "trade-button")).onPress(button -> {
+            ((ButtonWidgetAccessor) component.childById(Button.class, "trade-button")).owo$setOnPress(button -> {
                 this.menu.loadOffer(offerIndex);
                 this.priceDisplay.accept(String.valueOf(offer.getPrice()));
             });
@@ -244,16 +242,16 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
     private FlowLayout makeTabButton(Item icon, boolean active, Button.OnPress onPress) {
         var buttonContainer = this.model.expandTemplate(FlowLayout.class, "tab-button", Map.of("icon-item", BuiltInRegistries.ITEM.getKey(icon).toString()));
 
-        final var button = ((ParentComponent) buttonContainer).childByIdOther(Button.class, "tab-button");
+        final var button = buttonContainer.childById(Button.class, "tab-button");
         this.tabButtons.add(button);
 
         button.active = active;
-        ((ButtonWidgetExtension) button).onPress(onPress);
+        ((ButtonWidgetAccessor) button).owo$setOnPress(onPress);
 
         return (FlowLayout) buttonContainer;
     }
 
-    private <C extends ModComponent> C component(Class<C> componentClass, String id) {
+    public <C extends Component> C component(Class<C> componentClass, String id) {
         return this.uiAdapter.rootComponent.childById(componentClass, id);
     }
 

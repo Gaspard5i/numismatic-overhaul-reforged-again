@@ -2,6 +2,8 @@ package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.component.DyedItemColor;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
@@ -10,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
@@ -50,7 +51,7 @@ public class SellDyedArmorAdapter extends TradeJsonAdapter {
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
             ItemStack itemStack2 = new ItemStack(this.sell);
-            if (this.sell instanceof DyeableLeatherItem) {
+            if (itemStack2.is(ItemTags.DYEABLE)) {
                 List<DyeItem> list = Lists.newArrayList();
                 list.add(getDye(random));
                 if (random.nextFloat() > 0.7F) {
@@ -61,10 +62,9 @@ public class SellDyedArmorAdapter extends TradeJsonAdapter {
                     list.add(getDye(random));
                 }
 
-                itemStack2 = DyeableLeatherItem.dyeArmor(itemStack2, list);
+                itemStack2 = DyedItemColor.applyDyes(itemStack2, list);
             }
-
-            return new MerchantOffer(CurrencyHelper.getClosest(price), itemStack2, this.maxUses, this.experience, priceMultiplier);
+            return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), itemStack2, this.maxUses, this.experience, priceMultiplier);
 
         }
 

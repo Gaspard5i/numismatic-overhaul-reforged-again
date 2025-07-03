@@ -1,14 +1,16 @@
 package tallestred.numismaticoverhaul.block;
 
+import io.wispforest.owo.client.screens.ScreenUtils;
+import io.wispforest.owo.client.screens.SlotGenerator;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
-import tallestred.numismaticoverhaul.cap.CurrencyHolderAttacher;
+import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.client.gui.ShopScreen;
 import tallestred.numismaticoverhaul.init.MenuInit;
-import tallestred.numismaticoverhaul.network.NetworkHandler;
 import tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket;
 import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
-import tallestred.numismaticoverhaul.owostuff.client.screens.ScreenUtils;
-import tallestred.numismaticoverhaul.owostuff.client.screens.SlotGenerator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,9 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.bufferInventory.setItem(0, this.offers.get((int) index).getSellStack());
             this.updateClient();
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.LOAD_OFFER, index));
+            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.LOAD_OFFER, index));
         }
     }
 
@@ -102,17 +101,17 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.addOrReplaceOffer(new ShopOffer(stack, price));
             this.updateClient();
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.CREATE_OFFER, price));
+            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.CREATE_OFFER, price));
         }
     }
 
     public void extractCurrency() {
         if (!this.owner.level().isClientSide) {
-            CurrencyHolderAttacher.getExampleHolderUnwrap(owner).modify(shop.getStoredCurrency());
+            CurrencyHolder.modify(this.owner, shop.getStoredCurrency());
             this.shop.setStoredCurrency(0);
             this.updateClient();
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.EXTRACT_CURRENCY));
+            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.EXTRACT_CURRENCY));
         }
     }
 
@@ -121,7 +120,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.deleteOffer(bufferInventory.getItem(0));
             this.updateClient();
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.DELETE_OFFER));
+            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.DELETE_OFFER));
         }
     }
 
@@ -130,11 +129,12 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.toggleTransfer();
             this.updateClient();
         } else {
-            NetworkHandler.INSTANCE.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.TOGGLE_TRANSFER));
+            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.TOGGLE_TRANSFER));
         }
     }
     public void updateClient() {
-        NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) owner), new UpdateShopScreenS2CPacket(shop));
+        if (this.owner instanceof ServerPlayer serverPlayer)
+        serverPlayer.connection.send(new UpdateShopScreenS2CPacket(shop));
     }
 
     public ItemStack getBufferStack() {
@@ -150,7 +150,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         ShopBlockEntity shopBlockEntity = (ShopBlockEntity) player.level().getBlockEntity(friendlyByteBuf.readBlockPos());
         shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());
         shopBlockEntity.getOffers().clear();
-        shopBlockEntity.getOffers().addAll(friendlyByteBuf.readList((buf) -> ShopOffer.fromNbt(buf.readNbt())));
+        shopBlockEntity.getOffers().addAll(friendlyByteBuf.readList((buf) -> ShopOffer.fromNbt(player.level().registryAccess(), buf.readNbt())));
         shopBlockEntity.allowsTransfer = friendlyByteBuf.readBoolean();
         return shopBlockEntity;
     }

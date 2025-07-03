@@ -1,6 +1,13 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
 import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
@@ -16,7 +23,9 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class EnchantItemAdapter extends TradeJsonAdapter {
 
@@ -56,17 +65,45 @@ public class EnchantItemAdapter extends TradeJsonAdapter {
         }
 
         public MerchantOffer getOffer(Entity entity, RandomSource random) {
-            ItemStack itemStack = toEnchant.copy();
-            itemStack = EnchantmentHelper.enchantItem(random, itemStack, level, allowTreasure);
+            var itemStack = toEnchant.copy();
 
-            int price = basePrice;
-            for (Map.Entry<Enchantment, Integer> entry : EnchantmentHelper.getEnchantments(itemStack).entrySet()) {
-                price += price * 0.10f + basePrice * (entry.getKey().isTreasureOnly() ? 2f : 1f) *
-                        entry.getValue() * Mth.nextFloat(random, .8f, 1.2f)
-                        * (5f / (float) entry.getKey().getRarity().getWeight());
+            var enchantmentRegistry = entity.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+            var nonTreasureEnchants = enchantmentRegistry.getTag(EnchantmentTags.NON_TREASURE);
+            var treasureRegistry = enchantmentRegistry.getTag(EnchantmentTags.TRADEABLE);
+            var enchants = List.<EnchantmentInstance>of();
+            if (allowTreasure && treasureRegistry.isPresent()) {
+                enchants = EnchantmentHelper.selectEnchantment(random, itemStack, level, treasureRegistry.get().stream());
+            }
+            else if (nonTreasureEnchants.isPresent()) {
+                enchants = EnchantmentHelper.selectEnchantment(random, itemStack, level, nonTreasureEnchants.get().stream());
             }
 
-            return new MerchantOffer(CurrencyHelper.getClosest(price), toEnchant, itemStack, maxUses, this.experience, multiplier);
+            var finalItemStack = itemStack.copy();
+            if (finalItemStack.is(Items.BOOK)) {
+                finalItemStack = new ItemStack(Items.ENCHANTED_BOOK);
+            }
+
+            for (EnchantmentInstance enchant : enchants) {
+                finalItemStack.enchant(enchant.enchantment, enchant.level);
+            }
+
+            int price = basePrice;
+            var enchantments = EnchantmentHelper.getEnchantmentsForCrafting(finalItemStack);
+
+            for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+                var enchantment = entry.getKey();
+                var isTreasure = enchantment.is(EnchantmentTags.TREASURE);
+
+                if (enchantment.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+                    price *= 2;
+                }
+                price += (int) (price * 0.10f + basePrice * (isTreasure ? 2f : 1f) *
+                        entry.getIntValue() * Mth.nextFloat(random, .8f, 1.2f)
+                        * (5f / (float) enchantment.value().getWeight()));
+            }
+
+            var itemAndCost = CurrencyHelper.getClosest(price);
+            return new MerchantOffer(new ItemCost(itemAndCost.getItem(), itemAndCost.getCount()), Optional.of(new ItemCost(toEnchant.getItem())), finalItemStack, maxUses, this.experience, multiplier);
         }
     }
 }
