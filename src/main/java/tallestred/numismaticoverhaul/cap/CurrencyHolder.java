@@ -1,32 +1,34 @@
 package tallestred.numismaticoverhaul.cap;
 
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.init.DataAttachmentInit;
 import tallestred.numismaticoverhaul.item.CoinItem;
+import tallestred.numismaticoverhaul.network.UpdatePlayerCurrencyPacket;
+import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyHolder  {
+public class CurrencyHolder {
     public static long getValue(Player player) {
         return player.getData(DataAttachmentInit.VALUE.get());
     }
 
     public static void setValue(Player player, long value) {
         player.setData(DataAttachmentInit.VALUE.get(), value);
+        if (player instanceof ServerPlayer)
+            NumismaticOverhaul.MY_CHANNEL.serverHandle(player).send(new UpdatePlayerCurrencyPacket(value));
     }
+
     public static void silentModify(Player player, long value) {
-        setValue(player,getValue(player) + value);
+        setValue(player, getValue(player) + value);
     }
-    public static Long popTransaction(ArrayList<Long> transactions) {
-        return transactions.remove(transactions.size() - 1);
-    }
-    public static void pushTransaction(ArrayList<Long> transactions, long value) {
-        transactions.add(value);
-    }
+
 
     public static void modify(Player player, long value) {
         setValue(player, getValue(player) + value);
@@ -41,15 +43,11 @@ public class CurrencyHolder  {
         for (ItemStack stack : transactionStacks) {
             message.append(net.minecraft.network.chat.Component.literal("§b" + stack.getCount() + " "));
             message.append(net.minecraft.network.chat.Component.translatable("currency.numismaticoverhaul." + ((CoinItem) stack.getItem()).currency.name().toLowerCase()));
-            if (transactionStacks.indexOf(stack) != transactionStacks.size() - 1) message.append(net.minecraft.network.chat.Component.literal(", "));
+            if (transactionStacks.indexOf(stack) != transactionStacks.size() - 1)
+                message.append(net.minecraft.network.chat.Component.literal(", "));
         }
         message.append(net.minecraft.network.chat.Component.literal("§7]"));
 
         player.displayClientMessage(message, true);
-    }
-
-    public static void commitTransactions(Player player) {
-        modify(player, player.getData(DataAttachmentInit.TRANSACTIONS.get()).stream().mapToLong(Long::longValue).sum());
-        player.getData(DataAttachmentInit.TRANSACTIONS.get()).clear();
     }
 }

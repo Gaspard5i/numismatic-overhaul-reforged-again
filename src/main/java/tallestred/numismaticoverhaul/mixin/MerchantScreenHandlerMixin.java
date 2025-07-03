@@ -48,8 +48,6 @@ public class MerchantScreenHandlerMixin {
         } else if (stack.getItem() == ItemInit.MONEY_BAG.get()) {
             autofillWithMoneyBag(slot, stack, handler);
         }
-
-        if (slot == 1) CurrencyHolder.commitTransactions(player);
     }
 
     private static void numismatic$autofillWithCoins(int slot, ItemStack stack, MerchantMenu handler) {
@@ -65,8 +63,6 @@ public class MerchantScreenHandlerMixin {
         //Is that even possible?
         Player player = ((Inventory) handler.getSlot(3).container).player;
         if (!(neededCurrency <= CurrencyHolder.getValue(player))) return;
-
-        CurrencyHolder.pushTransaction(player.getData(DataAttachmentInit.TRANSACTIONS.get()), -neededCurrency);
 
         handler.slots.get(slot).set(stack.copy());
     }
@@ -89,7 +85,6 @@ public class MerchantScreenHandlerMixin {
             CurrencyHelper.deduceFromInventory(player, requiredCurrency);
         } else {
             CurrencyHelper.deduceFromInventory(player, availableCurrencyInPlayerInventory);
-            CurrencyHolder.pushTransaction(player.getData(DataAttachmentInit.TRANSACTIONS.get()), -neededCurrency);
         }
 
         handler.slots.get(slot).set(stack.copy());

@@ -2,26 +2,26 @@ package tallestred.numismaticoverhaul.block;
 
 import io.wispforest.owo.client.screens.ScreenUtils;
 import io.wispforest.owo.client.screens.SlotGenerator;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.client.gui.ShopScreen;
 import tallestred.numismaticoverhaul.init.MenuInit;
 import tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket;
 import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShopScreenHandler extends AbstractContainerMenu {
@@ -33,18 +33,20 @@ public class ShopScreenHandler extends AbstractContainerMenu {
     public long storedCurrency;
     public boolean canTransfer;
 
-    public ShopScreenHandler(int syncId, Inventory playerInventory, FriendlyByteBuf data) {
-        this(syncId, playerInventory, getShop(playerInventory.player, data));
+    public ShopScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, playerInventory, new SimpleContainer(27));
     }
 
-    public ShopScreenHandler(int syncId, Inventory playerInventory, ShopBlockEntity shopInventory) {
+    public ShopScreenHandler(int syncId, Inventory playerInventory, Container shopInventory) {
         super(MenuInit.SHOP.get(), syncId);
         this.shopInventory = shopInventory;
         this.owner = playerInventory.player;
-        this.shop = shopInventory;
-        this.storedCurrency = this.shop.getStoredCurrency();
-        this.canTransfer = this.shop.allowsTransfer;
-        this.offers = this.shop.getOffers();
+        if (!this.owner.level().isClientSide) {
+            this.shop = (ShopBlockEntity) shopInventory;
+            this.offers = shop.getOffers();
+        } else {
+            this.offers = new ArrayList<>();
+        }
         SlotGenerator.begin(this::addSlot, 8, 17)
                 .slotFactory((inv, index, x, y) -> new AutoHidingSlot(inv, index, x, y, 0, false))
                 .grid(this.shopInventory, 0, 9, 3)
@@ -90,7 +92,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.bufferInventory.setItem(0, this.offers.get((int) index).getSellStack());
             this.updateClient();
         } else {
-            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.LOAD_OFFER, index));
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.LOAD_OFFER, index));
         }
     }
 
@@ -101,7 +103,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.addOrReplaceOffer(new ShopOffer(stack, price));
             this.updateClient();
         } else {
-            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.CREATE_OFFER, price));
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.CREATE_OFFER, price));
         }
     }
 
@@ -111,7 +113,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.setStoredCurrency(0);
             this.updateClient();
         } else {
-            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.EXTRACT_CURRENCY));
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.EXTRACT_CURRENCY));
         }
     }
 
@@ -120,7 +122,7 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.deleteOffer(bufferInventory.getItem(0));
             this.updateClient();
         } else {
-            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.DELETE_OFFER));
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.DELETE_OFFER));
         }
     }
 
@@ -129,12 +131,12 @@ public class ShopScreenHandler extends AbstractContainerMenu {
             this.shop.toggleTransfer();
             this.updateClient();
         } else {
-            PacketDistributor.sendToServer(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.ShopScreenHandlerAction.TOGGLE_TRANSFER));
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.TOGGLE_TRANSFER));
         }
     }
+
     public void updateClient() {
-        if (this.owner instanceof ServerPlayer serverPlayer)
-        serverPlayer.connection.send(new UpdateShopScreenS2CPacket(shop));
+        NumismaticOverhaul.MY_CHANNEL.serverHandle(owner).send(new UpdateShopScreenS2CPacket(shop));
     }
 
     public ItemStack getBufferStack() {
@@ -148,10 +150,10 @@ public class ShopScreenHandler extends AbstractContainerMenu {
 
     public static ShopBlockEntity getShop(Player player, FriendlyByteBuf friendlyByteBuf) {
         ShopBlockEntity shopBlockEntity = (ShopBlockEntity) player.level().getBlockEntity(friendlyByteBuf.readBlockPos());
-        shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());
+    /*    shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());
         shopBlockEntity.getOffers().clear();
         shopBlockEntity.getOffers().addAll(friendlyByteBuf.readList((buf) -> ShopOffer.fromNbt(player.level().registryAccess(), buf.readNbt())));
-        shopBlockEntity.allowsTransfer = friendlyByteBuf.readBoolean();
+        shopBlockEntity.allowsTransfer = friendlyByteBuf.readBoolean();*/
         return shopBlockEntity;
     }
 

@@ -72,38 +72,11 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
         rootComponent.childById(FlowLayout.class, "transfer-button").mouseDown().subscribe((x, y, button) -> {
             if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) return false;
-            this.menu.toggleTransfer();;
+            this.menu.toggleTransfer();
+            ;
             UISounds.playInteractionSound();
             return true;
         });
-        long[] storedCurrency = CurrencyResolver.splitValues(this.menu.storedCurrency);
-        this.component(LabelComponent.class, "bronze-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[0])));
-        this.component(LabelComponent.class, "silver-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[1])));
-        this.component(LabelComponent.class, "gold-count").text(net.minecraft.network.chat.Component.literal(String.valueOf(storedCurrency[2])));
-
-        int prevOffers = this.offers.size();
-        this.offers.clear();
-        this.offers.addAll(this.menu.offers);
-        this.populateTrades(this.tab);
-
-        if (this.tab == 1 && this.offers.size() > prevOffers) {
-            var offersScroll = this.component(ScrollContainer.class, "offer-container");
-            var leftColumn2 = offersScroll.childById(FlowLayout.class, "first-trades-column");
-
-            offersScroll.scrollTo(leftColumn2.children().get(leftColumn2.children().size() - 1));
-        }
-
-        this.component(FlowLayout.class, "transfer-button").tooltip(
-                menu.canTransfer
-                        ? net.minecraft.network.chat.Component.translatable("gui.numismaticoverhaul.shop.transfer_tooltip.enabled")
-                        : net.minecraft.network.chat.Component.translatable("gui.numismaticoverhaul.shop.transfer_tooltip.disabled")
-        );
-        this.component(LabelComponent.class, "transfer-label").text(
-                menu.canTransfer
-                        ? TextOps.withColor("✔", 0x28FFBF)
-                        : TextOps.withColor("✘", 0xEB1D36)
-        );
-
     }
 
     public void update(UpdateShopScreenS2CPacket data) {

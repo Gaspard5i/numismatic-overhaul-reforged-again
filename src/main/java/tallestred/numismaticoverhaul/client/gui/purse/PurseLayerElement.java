@@ -70,9 +70,9 @@ public class PurseLayerElement<S extends Screen> implements Consumer<Layer<S, St
             long value = value(bronzeCount, silverCount, goldCount);
 
             if (Screen.hasShiftDown() && Screen.hasControlDown()) {
-                PacketDistributor.sendToServer(RequestPurseActionC2SPacket.extractAll());
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(RequestPurseActionC2SPacket.extractAll());
             } else if (value > 0) {
-                PacketDistributor.sendToServer(RequestPurseActionC2SPacket.extract(value));
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(RequestPurseActionC2SPacket.extract(value));
                 CurrencyHolder.silentModify(Minecraft.getInstance().player, -value);
 
                 adjust(total.getValue().getAsLong(), bronzeCount, Currency.BRONZE, 0, popup.childById(LabelComponent.class, "bronze-count"));
@@ -87,7 +87,7 @@ public class PurseLayerElement<S extends Screen> implements Consumer<Layer<S, St
 
         button.onPress(buttonComponent -> {
             if (Screen.hasShiftDown()) {
-                PacketDistributor.sendToServer(RequestPurseActionC2SPacket.storeAll());
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(RequestPurseActionC2SPacket.storeAll());
             } else if (popup.hasParent()) {
                 popup.remove();
             } else {

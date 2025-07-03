@@ -1,6 +1,9 @@
 package tallestred.numismaticoverhaul.block;
 
+import io.wispforest.endec.SerializationContext;
+import io.wispforest.endec.impl.KeyedEndec;
 import io.wispforest.owo.ops.WorldOps;
+import io.wispforest.owo.serialization.RegistriesAttribute;
 import io.wispforest.owo.util.ImplementedInventory;
 import net.minecraft.core.HolderLookup;
 import net.neoforged.api.distmarker.Dist;
@@ -38,16 +41,13 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
 
     private static final int[] SLOTS = IntStream.range(0, 27).toArray();
     private static final int[] NO_SLOTS = new int[0];
-
     private final NonNullList<ItemStack> INVENTORY = NonNullList.withSize(27, ItemStack.EMPTY);
-
+    public static KeyedEndec<List<ShopOffer>> OFFERS_LIST = ShopOffer.ENDEC.listOf().keyed("offers", ArrayList::new);
     private final Merchant merchant;
-    private final List<ShopOffer> offers;
-
+    private List<ShopOffer> offers;
     private long storedCurrency;
     private UUID owner;
     public boolean allowsTransfer = false;
-
     private int tradeIndex;
 
     public ShopBlockEntity(BlockPos pos, BlockState state) {
@@ -120,7 +120,7 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, INVENTORY, registries);
-        ShopOffer.writeAll(tag, offers, registries);
+        tag.put(SerializationContext.attributes(RegistriesAttribute.of(this.getLevel().registryAccess())), OFFERS_LIST, offers);
         tag.putBoolean("AllowsTransfer", this.allowsTransfer);
         tag.putLong("StoredCurrency", storedCurrency);
         if (owner != null) {
@@ -132,7 +132,7 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, INVENTORY, registries);
-        ShopOffer.readAll(tag, offers, registries);
+        this.offers = tag.get(OFFERS_LIST);
         if (tag.contains("Owner")) {
             owner = tag.getUUID("Owner");
         }

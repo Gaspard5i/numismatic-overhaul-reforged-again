@@ -2,6 +2,7 @@ package tallestred.numismaticoverhaul.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.AnvilBlock;
+import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.currency.CurrencyConverter;
 import tallestred.numismaticoverhaul.init.BlockInit;
 import net.minecraft.core.BlockPos;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 
 public class ShopBlock extends BaseEntityBlock {
     public static final MapCodec<ShopBlock> CODEC = simpleCodec(ShopBlock::new);
@@ -77,13 +79,10 @@ public class ShopBlock extends BaseEntityBlock {
                 if (player.isShiftKeyDown()) {
                     return openShopMerchant(player, shop);
                 } else {
-                    if (player instanceof ServerPlayer player1)
-                        player1.openMenu(shop, friendlyByteBuf -> {
-                            friendlyByteBuf.writeBlockPos(pos);
-                            friendlyByteBuf.writeLong(shop.getStoredCurrency());
-                            friendlyByteBuf.writeCollection(shop.getOffers(), (buf, shopOffer) -> buf.writeNbt(shopOffer.toNbt(world.getServer().registryAccess())));
-                            friendlyByteBuf.writeBoolean(shop.allowsTransfer);
-                        });
+                    if (player instanceof ServerPlayer player1) {
+                        player1.openMenu(shop);
+                        NumismaticOverhaul.MY_CHANNEL.serverHandle(player1).send(new UpdateShopScreenS2CPacket(shop));
+                    }
                 }
             } else {
                 return openShopMerchant(player, shop);

@@ -14,7 +14,4 @@ public class DataAttachmentInit {
     public static final Supplier<AttachmentType<Long>> VALUE = ATTACHMENT_TYPES.register(
             "value", () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).copyOnDeath().build()
     );
-    public static final Supplier<AttachmentType<ArrayList<Long>>> TRANSACTIONS = ATTACHMENT_TYPES.register(
-            "transactions", () -> AttachmentType.builder(() -> new ArrayList<Long>()).build()
-    );
 }

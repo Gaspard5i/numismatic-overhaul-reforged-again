@@ -12,6 +12,6 @@ import net.minecraft.world.inventory.MenuType;
 
 public class MenuInit {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, NumismaticOverhaul.MODID);
-    public static final DeferredHolder<MenuType<?>, MenuType<ShopScreenHandler>> SHOP = MENU_TYPES.register("shop", () -> IMenuTypeExtension.create(ShopScreenHandler::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<ShopScreenHandler>> SHOP = MENU_TYPES.register("shop", () -> new MenuType<>(ShopScreenHandler::new, FeatureFlags.DEFAULT_FLAGS));
     public static final DeferredHolder<MenuType<?>, MenuType<PiggyBankScreenHandler>> PIGGY_BANK = MENU_TYPES.register("piggy_bank", () -> new MenuType<>(PiggyBankScreenHandler::new, FeatureFlags.DEFAULT_FLAGS));
 }

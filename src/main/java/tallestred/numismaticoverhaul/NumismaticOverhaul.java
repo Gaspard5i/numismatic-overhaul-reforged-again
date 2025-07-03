@@ -2,6 +2,9 @@ package tallestred.numismaticoverhaul;
 
 
 import com.mojang.serialization.MapCodec;
+import io.wispforest.endec.impl.ReflectiveEndecBuilder;
+import io.wispforest.owo.network.OwoNetChannel;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -9,14 +12,17 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import tallestred.numismaticoverhaul.block.ShopOffer;
 import tallestred.numismaticoverhaul.config.NOClientConfig;
 import tallestred.numismaticoverhaul.config.NOConfig;
 import tallestred.numismaticoverhaul.init.*;
@@ -24,6 +30,7 @@ import tallestred.numismaticoverhaul.loot_stuff.AddItemModifier;
 import tallestred.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
 import tallestred.numismaticoverhaul.network.RequestPurseActionC2SPacket;
 import tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket;
+import tallestred.numismaticoverhaul.network.UpdatePlayerCurrencyPacket;
 import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 import tallestred.numismaticoverhaul.villagers.json.VillagerTradesHandler;
 import net.minecraft.ChatFormatting;
@@ -46,9 +53,10 @@ public class NumismaticOverhaul {
             LOOT_MODIFIER_SERIALIZERS.register("add_item", AddItemModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<? extends IGlobalLootModifier>> MONEY_BAG =
             LOOT_MODIFIER_SERIALIZERS.register("money_bag", MoneyBagLootModifier.CODEC);
+    public static final OwoNetChannel MY_CHANNEL = OwoNetChannel.create(ResourceLocation.fromNamespaceAndPath(MODID, "main"));
 
     public NumismaticOverhaul(IEventBus bus, Dist dist, ModContainer container) {
-        container.registerConfig(ModConfig.Type.COMMON, NOConfig.CONFIG_SPEC);
+        container.registerConfig(ModConfig.Type.STARTUP, NOConfig.CONFIG_SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, NOClientConfig.CLIENT_SPEC);
         LOOT_MODIFIER_SERIALIZERS.register(bus);
         ItemInit.ITEMS.register(bus);
@@ -60,21 +68,26 @@ public class NumismaticOverhaul {
         DataAttachmentInit.ATTACHMENT_TYPES.register(bus);
         ItemComponentInit.DATA_COMPONENTS.register(bus);
         VillagerTradesHandler.registerDefaultAdapters();
+        bus.addListener(this::onCommonSetup);
+        NeoForge.EVENT_BUS.register(this);
+    }
+
+    public void onCommonSetup(FMLCommonSetupEvent event) {
+        ReflectiveEndecBuilder.SHARED_INSTANCE.register(ShopOffer.ENDEC, ShopOffer.class);
+        MY_CHANNEL.registerClientbound(UpdateShopScreenS2CPacket.class, UpdateShopScreenS2CPacket::handle);
+        MY_CHANNEL.registerClientbound(UpdatePlayerCurrencyPacket.class, UpdatePlayerCurrencyPacket::handle);
+        MY_CHANNEL.registerServerbound(RequestPurseActionC2SPacket.class, RequestPurseActionC2SPacket::handle);
+        MY_CHANNEL.registerServerbound(ShopScreenHandlerRequestC2SPacket.class, ShopScreenHandlerRequestC2SPacket::handle);
     }
 
     @SubscribeEvent
-    public static void onCommonSetup(FMLCommonSetupEvent event) {
+    public void playerJoin(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            NumismaticOverhaul.MY_CHANNEL.serverHandle(player).send(new UpdatePlayerCurrencyPacket(player.getData(DataAttachmentInit.VALUE.get())));
+        }
     }
 
-    @SubscribeEvent
-    public static void register(final RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar reg = event.registrar(MODID).versioned("2.0.2");
-        reg.playToServer(RequestPurseActionC2SPacket.TYPE, RequestPurseActionC2SPacket.STREAM_CODEC, RequestPurseActionC2SPacket::handle);
-        reg.playToClient(UpdateShopScreenS2CPacket.TYPE, UpdateShopScreenS2CPacket.STREAM_CODEC, UpdateShopScreenS2CPacket::handle);
-        reg.playToServer(ShopScreenHandlerRequestC2SPacket.TYPE, ShopScreenHandlerRequestC2SPacket.STREAM_CODEC, ShopScreenHandlerRequestC2SPacket::handle);
-    }
 
-    @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
