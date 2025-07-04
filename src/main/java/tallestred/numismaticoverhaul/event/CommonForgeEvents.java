@@ -56,9 +56,9 @@ public class CommonForgeEvents {
 
     @SubscribeEvent
     public static void playerJoin(EntityJoinLevelEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && !event.getLevel().isClientSide()) {
-            if (player.hasData(DataAttachmentInit.VALUE.get()))
-                NumismaticOverhaul.MY_CHANNEL.serverHandle(player).send(new UpdatePlayerCurrencyPacket(player.getExistingDataOrNull(DataAttachmentInit.VALUE.get())));
+        if (event.getEntity() != null && event.getEntity() instanceof ServerPlayer player && !event.getLevel().isClientSide()) {
+            //if (player.hasData(DataAttachmentInit.VALUE.get()))
+            //   NumismaticOverhaul.MY_CHANNEL.serverHandle(player).send(new UpdatePlayerCurrencyPacket(player.getExistingDataOrNull(DataAttachmentInit.VALUE.get())));
         }
     }
 

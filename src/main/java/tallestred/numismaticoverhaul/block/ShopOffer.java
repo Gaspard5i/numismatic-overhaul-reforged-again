@@ -34,7 +34,7 @@ public record ShopOffer(ItemStack sell, long price) {
         boolean isPocketChange = CurrencyConverter.getRequiredCurrencyTypes(price) == 1;
         var buyStack = isPocketChange ? CurrencyConverter.getAsItemStackList(price).getFirst() : MoneyBagItem.fromRawValue(price);
         int maxUses = inexhaustible ? Integer.MAX_VALUE : count(shop.getItems(), sell) / sell.getCount();
-        var tradedItem = isPocketChange ? new ItemCost(buyStack.getItem(), buyStack.getCount()) : new ItemCost(BuiltInRegistries.ITEM.createIntrusiveHolder(buyStack.getItem()), 1, DataComponentPredicate.allOf(DataComponentMap.composite(DataComponentMap.EMPTY, DataComponentMap.builder().set(ItemComponentInit.MONEY_BAG_COMPONENT, MoneyBagComponent.of(price)).build())), buyStack);
+        var tradedItem = isPocketChange ? new ItemCost(buyStack.getItem(), buyStack.getCount()) : new ItemCost(BuiltInRegistries.ITEM.wrapAsHolder(buyStack.getItem()), 1, DataComponentPredicate.allOf(DataComponentMap.composite(DataComponentMap.EMPTY, DataComponentMap.builder().set(ItemComponentInit.MONEY_BAG_COMPONENT, MoneyBagComponent.of(price)).build())), buyStack);
 
         return new MerchantOffer(tradedItem, sell, maxUses, 0, 0);
     }

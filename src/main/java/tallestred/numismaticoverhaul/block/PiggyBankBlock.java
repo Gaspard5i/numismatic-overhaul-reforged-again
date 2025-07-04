@@ -2,16 +2,11 @@ package tallestred.numismaticoverhaul.block;
 
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.level.block.*;
-import tallestred.numismaticoverhaul.init.BlockInit;
-import tallestred.numismaticoverhaul.init.SoundInit;
-import tallestred.numismaticoverhaul.init.TagInit;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
@@ -22,6 +17,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,6 +32,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import tallestred.numismaticoverhaul.init.BlockInit;
+import tallestred.numismaticoverhaul.init.SoundInit;
+import tallestred.numismaticoverhaul.init.TagInit;
 
 import java.util.ArrayList;
 import java.util.List;

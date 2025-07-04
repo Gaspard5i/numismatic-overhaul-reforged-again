@@ -121,7 +121,7 @@
             <flow-layout direction="vertical">
                 <children>
                     <item>
-                        <item>{{icon-item}}</item>
+                        <stack>{{icon-item}}</stack>
                         <positioning type="absolute">9,6</positioning>
                     </item>
 

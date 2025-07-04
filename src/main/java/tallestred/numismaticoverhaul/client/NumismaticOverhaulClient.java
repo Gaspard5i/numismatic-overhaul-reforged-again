@@ -12,7 +12,9 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -34,11 +36,16 @@ import tallestred.numismaticoverhaul.client.gui.purse.PurseLayerContainer;
 import tallestred.numismaticoverhaul.mixin.LayerInstanceAccessor;
 
 @Mod(value = NumismaticOverhaul.MODID, dist = Dist.CLIENT)
-@EventBusSubscriber()
 public class NumismaticOverhaulClient {
 
-    @SubscribeEvent
-    public static void onInitializeClient(FMLClientSetupEvent event) {
+    public NumismaticOverhaulClient(IEventBus modEventBus, Dist dist, ModContainer container) {
+        modEventBus.addListener(this::onInitializeClient);
+        modEventBus.addListener(this::registerBlockEntity);
+        modEventBus.addListener(this::registerMenus);
+    }
+
+
+    public void onInitializeClient(FMLClientSetupEvent event) {
         ItemProperties.register(ItemInit.BRONZE_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
         ItemProperties.register(ItemInit.SILVER_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
         ItemProperties.register(ItemInit.GOLD_COIN.get(), ResourceLocation.parse("coins"), (stack, world, entity, seed) -> stack.getCount() / 100.0f);
@@ -92,15 +99,14 @@ public class NumismaticOverhaulClient {
         );
     }
 
-    @SubscribeEvent
-    public static void registerMenus(RegisterMenuScreensEvent event) {
+
+    public void registerMenus(RegisterMenuScreensEvent event) {
         event.register(MenuInit.SHOP.get(), ShopScreen::new);
         event.register(MenuInit.PIGGY_BANK.get(), PiggyBankScreen::new);
     }
 
 
-    @SubscribeEvent
-    public static void registerBlockEntity(EntityRenderersEvent.RegisterRenderers event) {
+    public void registerBlockEntity(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(BlockInit.SHOP_BE.get(), ShopBlockEntityRender::new);
     }
 
