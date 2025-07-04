@@ -1,5 +1,6 @@
 {
     "type": "minecraft:crafting_shaped",
+    "category": "misc",
     "pattern": [
         "#_#",
         "OOO"
@@ -16,7 +17,7 @@
         }
     },
     "result": {
-        "item": "numismaticoverhaul:shop",
+        "id": "numismaticoverhaul:shop",
         "count": 1
     }
 }

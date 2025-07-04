@@ -25,6 +25,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import tallestred.numismaticoverhaul.block.ShopOffer;
 import tallestred.numismaticoverhaul.config.NOClientConfig;
 import tallestred.numismaticoverhaul.config.NOConfig;
+import tallestred.numismaticoverhaul.datagen.ModLootTableProvider;
 import tallestred.numismaticoverhaul.init.*;
 import tallestred.numismaticoverhaul.loot_stuff.AddItemModifier;
 import tallestred.numismaticoverhaul.loot_stuff.MoneyBagLootModifier;
@@ -69,9 +70,10 @@ public class NumismaticOverhaul {
         ItemComponentInit.DATA_COMPONENTS.register(bus);
         VillagerTradesHandler.registerDefaultAdapters();
         bus.addListener(this::onCommonSetup);
-        NeoForge.EVENT_BUS.register(this);
+        bus.addListener(this::onGatherData);
     }
 
+    @SubscribeEvent
     public void onCommonSetup(FMLCommonSetupEvent event) {
         ReflectiveEndecBuilder.SHARED_INSTANCE.register(ShopOffer.ENDEC, ShopOffer.class);
         MY_CHANNEL.registerClientbound(UpdateShopScreenS2CPacket.class, UpdateShopScreenS2CPacket::handle);
@@ -81,19 +83,12 @@ public class NumismaticOverhaul {
     }
 
     @SubscribeEvent
-    public void playerJoin(EntityJoinLevelEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            NumismaticOverhaul.MY_CHANNEL.serverHandle(player).send(new UpdatePlayerCurrencyPacket(player.getData(DataAttachmentInit.VALUE.get())));
-        }
-    }
-
-
-    public static void onGatherData(GatherDataEvent event) {
+    public void onGatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         PackOutput packOutput = event.getGenerator().getPackOutput();
         //   generator.addProvider(event.includeServer(), new ModRecipeProvider(generator));
-        //generator.addProvider(event.includeServer(), new ModLootTableProvider(packOutput));
+        generator.addProvider(event.includeServer(), new ModLootTableProvider(packOutput, event.getLookupProvider()));
         //   generator.addProvider(event.includeServer(), new ModSoundProvider(generator, MODID, existingFileHelper));
         //    generator.addProvider(event.includeClient(), new ModItemModelProvider(generator, existingFileHelper));
         //  generator.addProvider(event.includeClient(), new ModBlockStateProvider(generator, existingFileHelper));

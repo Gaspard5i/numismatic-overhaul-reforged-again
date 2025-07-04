@@ -1,5 +1,8 @@
 package tallestred.numismaticoverhaul.mixin;
 
+import net.minecraft.world.item.Item;
+import tallestred.numismaticoverhaul.config.NOConfig;
+import tallestred.numismaticoverhaul.currency.CurrencyHelper;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import tallestred.numismaticoverhaul.init.TagInit;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,9 +26,8 @@ public abstract class LivingEntityMixin extends Entity {
     @Inject(method = "dropFromLootTable", at = @At("TAIL"))
     public void injectCoins(DamageSource source, boolean causedByPlayer, CallbackInfo ci) {
         if (!this.getType().is(TagInit.THE_BOURGEOISIE)) return;
-        if (random.nextFloat() > .5f)
-            spawnAtLocation(new ItemStack(ItemInit.BRONZE_COIN.get(), random.nextIntBetweenInclusive(9, 35)));
-        if (random.nextFloat() > .2f) spawnAtLocation(new ItemStack(ItemInit.SILVER_COIN.get()));
+        CurrencyHelper.dropCoins(this, ItemInit.BRONZE_COIN.get(), NOConfig.INSTANCE.minBronze.get(), NOConfig.INSTANCE.maxBronze.get(), NOConfig.INSTANCE.chanceForTaggedToDropBronzeCoins.get().floatValue());
+        CurrencyHelper.dropCoins(this, ItemInit.SILVER_COIN.get(), NOConfig.INSTANCE.minSilver.get(), NOConfig.INSTANCE.maxSilver.get(), NOConfig.INSTANCE.chanceForTaggedToDropSilverCoins.get().floatValue());
+        CurrencyHelper.dropCoins(this, ItemInit.GOLD_COIN.get(), NOConfig.INSTANCE.minGold.get(), NOConfig.INSTANCE.maxGold.get(), NOConfig.INSTANCE.chanceForTaggedToDropGoldCoins.get().floatValue());
     }
-
 }

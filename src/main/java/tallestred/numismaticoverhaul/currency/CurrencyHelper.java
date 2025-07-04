@@ -1,13 +1,13 @@
 package tallestred.numismaticoverhaul.currency;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.item.CoinItem;
 import tallestred.numismaticoverhaul.item.CurrencyItem;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +92,11 @@ public class CurrencyHelper {
     public static ItemCost getClosestTradeItem(long price) {
         var closestPriceStack = CurrencyHelper.getClosest(price);
         return new ItemCost(closestPriceStack.getItem(), closestPriceStack.getCount());
+    }
+
+    public static void dropCoins(Entity entity, Item item, int min, int max, float chance) {
+        if (entity.getRandom().nextFloat() < (chance * 0.01))
+            entity.spawnAtLocation(new ItemStack(item, entity.getRandom().nextIntBetweenInclusive(min, max)));
     }
 
 }
