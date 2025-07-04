@@ -36,15 +36,15 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files-primary: build/libs/!(*source*|*dev*|*javadoc*|*slim*).jar
           version-type: release
-          loaders: forge
-          game-versions: 1.20.1
-          java: 17
+          loaders: neoforge
+          game-versions: 1.21.1
+          java: 21
           name: ""
           changelog-file: changelog.*
           curseforge-dependencies:
-            6458432@1.20.1-1.0.4(required)
+            532610@0.12.21+1.21.6(required)
           modrinth-dependencies:
-            hcK0pdrI@1.20.1-1.0.4(required)
+            ccKDOlHs@0.12.21+1.21.6(required)
       - name: Nuke Changelog dot txt
         uses: DamianReeves/write-file-action@master
         with:
