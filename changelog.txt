@@ -1,1 +1,2 @@
-CHANGELOG:- [CHANGE] - fix #4 (crash with non-existent villager professions)
+CHANGELOG:
+- [CHANGE] - fix #4 (crash with non-existent villager professions)
