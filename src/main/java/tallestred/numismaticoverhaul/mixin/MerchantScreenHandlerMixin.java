@@ -63,7 +63,7 @@ public class MerchantScreenHandlerMixin {
         //Is that even possible?
         Player player = ((Inventory) handler.getSlot(3).container).player;
         if (!(neededCurrency <= CurrencyHolder.getValue(player))) return;
-
+        CurrencyHolder.silentModify(player, -neededCurrency);
         handler.slots.get(slot).set(stack.copy());
     }
 
