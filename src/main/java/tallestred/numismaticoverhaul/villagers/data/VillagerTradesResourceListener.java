@@ -19,7 +19,6 @@ import java.util.Map;
 public class VillagerTradesResourceListener extends SimpleJsonResourceReloadListener  {
 
     public VillagerTradesResourceListener() {
-        //Fortnite
         super(new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create(), "villager_trades");
     }
 
@@ -33,6 +32,8 @@ public class VillagerTradesResourceListener extends SimpleJsonResourceReloadList
         loader.forEach((identifier, jsonElement) -> {
             if (!jsonElement.isJsonObject()) return;
             JsonObject root = jsonElement.getAsJsonObject();
+            if (root == null)
+                return;
             VillagerTradesHandler.loadProfession(identifier, root);
         });
 

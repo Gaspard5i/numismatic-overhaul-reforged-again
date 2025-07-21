@@ -74,7 +74,8 @@ public class VillagerTradesHandler {
 
         //Clear context
         DeserializationContext.clear();
-
+        if (jsonRoot.get("profession") == null)
+            return;
         String fileName = "§a" + fileId.getNamespace() + "§f:§6" + fileId.getPath();
         ResourceLocation professionId = ResourceLocation.tryParse(jsonRoot.get("profession").getAsString());
 
