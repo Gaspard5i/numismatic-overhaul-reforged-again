@@ -1,15 +1,11 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
-import tallestred.numismaticoverhaul.NumismaticOverhaul;
-import tallestred.numismaticoverhaul.currency.CurrencyHelper;
-import tallestred.numismaticoverhaul.owostuff.util.RegistryAccess;
-import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
-import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.GsonHelper;
@@ -26,6 +22,10 @@ import net.minecraft.world.level.saveddata.maps.MapDecoration.Type;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import tallestred.numismaticoverhaul.NumismaticOverhaul;
+import tallestred.numismaticoverhaul.currency.CurrencyHelper;
+import tallestred.numismaticoverhaul.villagers.json.TradeJsonAdapter;
+import tallestred.numismaticoverhaul.villagers.json.VillagerJsonHelper;
 
 import java.util.Locale;
 
@@ -64,7 +64,7 @@ public class SellMapAdapter extends TradeJsonAdapter {
             if (!(entity.level() instanceof ServerLevel serverWorld)) return null;
 
             final var registry = serverWorld.registryAccess().registryOrThrow(Registries.STRUCTURE);
-            final Holder<Structure> feature = RegistryAccess.getEntry(registry, this.structureId);
+            final Holder<Structure> feature = registry.getHolderOrThrow(ResourceKey.create(Registries.STRUCTURE, structureId));
 
             if (feature == null || feature.unwrapKey().isEmpty()) {
                 NumismaticOverhaul.LOGGER.error("Tried to create map to invalid structure " + this.structureId);
