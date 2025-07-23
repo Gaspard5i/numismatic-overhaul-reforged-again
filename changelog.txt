@@ -1,3 +1,4 @@
 CHANGELOG:
 - [CHANGE] - fix #4 (crash with non-existent villager professions)
 - [CHANGE] fix #6 (coin dupe glitch while trading)
+- [CHANGE] - Change version schema to include game version too
