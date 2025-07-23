@@ -180,7 +180,6 @@ processResources {
 }
 
 java {
-    withSourcesJar()
 }
 
 jar {

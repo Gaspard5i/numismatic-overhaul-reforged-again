@@ -1,1 +1,2 @@
 CHANGELOG:
+Fix #3 (crash with cartographers)
