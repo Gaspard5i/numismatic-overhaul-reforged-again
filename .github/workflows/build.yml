@@ -34,7 +34,12 @@ jobs:
           github-token: ${{ secrets.GIT_TOKEN }}
           modrinth-id: BUc44jWB
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files-primary: build/libs/!(*source*|*dev*|*javadoc*|*slim*).jar
+          files:
+            - build/libs/**/*.jar
+            - '!**/*dev*.jar'
+            - '!**/*slim*.jar'
+            - '!**/*sources*.jar'
+            - '!**/*javadoc*.jar'
           version-type: release
           loaders: forge
           game-versions: 1.20.1
