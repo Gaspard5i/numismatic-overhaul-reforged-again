@@ -6,11 +6,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -23,11 +23,13 @@ import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ShopScreenHandler extends AbstractContainerMenu {
     private final Player owner;
     private final Container shopInventory;
     private final SimpleContainer bufferInventory = new SimpleContainer(1);
+    private int bufferSlotIndex = -1;
     public List<ShopOffer> offers;
     public ShopBlockEntity shop = null;
     public long storedCurrency;
@@ -54,22 +56,22 @@ public class ShopScreenHandler extends AbstractContainerMenu {
                 .moveTo(8, 85)
                 .playerInventory(playerInventory);
 
-        //Trade Buffer Slot
+        //Trade Buffer Slot (fantôme)
         this.bufferInventory.addListener(this::onBufferChanged);
         this.addSlot(new AutoHidingSlot(bufferInventory, 0, 186, 14, 0, true) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                ItemStack shadow = stack.copy();
-                this.set(shadow);
+                // Slot fantôme: pas de placement direct
                 return false;
             }
 
             @Override
             public boolean mayPickup(Player playerEntity) {
-                this.set(ItemStack.EMPTY);
+                // Slot fantôme: pas de retrait direct
                 return false;
             }
         });
+        this.bufferSlotIndex = this.slots.size() - 1;
     }
 
     private void onBufferChanged(Container inventory) {
@@ -96,11 +98,49 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         }
     }
 
+    // Définir la quantité du buffer (1..min(64, max stack))
+    public void setBufferCount(int count) {
+        if (!this.owner.level().isClientSide) {
+            final var stack = bufferInventory.getItem(0);
+            if (stack.isEmpty()) return;
+            int max = Math.min(64, stack.getMaxStackSize());
+            int clamped = Math.max(1, Math.min(count, max));
+            stack.setCount(clamped);
+            this.bufferInventory.setItem(0, stack);
+            this.updateClient();
+        }
+    }
+
+    // Définir depuis le stack porté par le curseur (copie, clamp 64)
+    public void setBufferFromCarried() {
+        if (!this.owner.level().isClientSide) {
+            ItemStack carried = this.getCarried();
+            if (carried.isEmpty()) return;
+            ItemStack copy = carried.copy();
+            int max = Math.min(64, copy.getMaxStackSize());
+            copy.setCount(Math.min(copy.getCount(), max));
+            this.bufferInventory.setItem(0, copy);
+            this.updateClient();
+        }
+    }
+
+    // Définir l’item du buffer depuis l’objet en main (copie, quantité par défaut 1)
+    public void setBufferFromHeld() {
+        if (!this.owner.level().isClientSide) {
+            ItemStack held = this.owner.getMainHandItem();
+            if (held.isEmpty()) return;
+            ItemStack copy = held.copy();
+            copy.setCount(1);
+            this.bufferInventory.setItem(0, copy);
+            this.updateClient();
+        }
+    }
+
     public void createOffer(long price) {
         if (!this.owner.level().isClientSide) {
             final var stack = bufferInventory.getItem(0);
             if (stack.isEmpty()) return;
-            this.shop.addOrReplaceOffer(new ShopOffer(stack, price));
+            this.shop.addOrReplaceOffer(new ShopOffer(stack.copy(), price));
             this.updateClient();
         } else {
             NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.CREATE_OFFER, price));
@@ -109,11 +149,16 @@ public class ShopScreenHandler extends AbstractContainerMenu {
 
     public void extractCurrency() {
         if (!this.owner.level().isClientSide) {
+            if (this.shop == null) return;
+            UUID ownerId = this.shop.getOwner();
+            if (ownerId == null || !ownerId.equals(this.owner.getUUID())) return; // sécurité: seul le propriétaire peut extraire
             CurrencyHolder.modify(this.owner, shop.getStoredCurrency());
             this.shop.setStoredCurrency(0);
             this.updateClient();
         } else {
-            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.EXTRACT_CURRENCY));
+            tallestred.numismaticoverhaul.NumismaticOverhaul.MY_CHANNEL.clientHandle().send(
+                    new tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket(
+                            tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket.Action.EXTRACT_CURRENCY));
         }
     }
 
@@ -148,6 +193,20 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         return ScreenUtils.handleSlotTransfer(this, invSlot, this.shopInventory.getContainerSize());
     }
 
+    public void moveShopSlotToPlayer(int slotIndex) {
+        if (this.owner.level().isClientSide) return;
+        int shopSize = this.shopInventory.getContainerSize();
+        if (slotIndex < 0 || slotIndex >= shopSize) return;
+        var slot = this.slots.get(slotIndex);
+        if (!slot.hasItem()) return;
+        ItemStack stack = slot.getItem();
+        boolean moved = this.moveItemStackTo(stack, shopSize, this.slots.size() - 1, true);
+        if (!moved) return;
+        if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
+        else slot.setChanged();
+        this.updateClient();
+    }
+
     public static ShopBlockEntity getShop(Player player, FriendlyByteBuf friendlyByteBuf) {
         ShopBlockEntity shopBlockEntity = (ShopBlockEntity) player.level().getBlockEntity(friendlyByteBuf.readBlockPos());
     /*    shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());
@@ -155,6 +214,28 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         shopBlockEntity.getOffers().addAll(friendlyByteBuf.readList((buf) -> ShopOffer.fromNbt(player.level().registryAccess(), buf.readNbt())));
         shopBlockEntity.allowsTransfer = friendlyByteBuf.readBoolean();*/
         return shopBlockEntity;
+    }
+
+    public int getShopSize() {
+        return this.shopInventory.getContainerSize();
+    }
+
+    @Override
+    public void clicked(int slotId, int dragType, ClickType clickType, Player player) {
+        if (slotId == this.bufferSlotIndex) {
+            if (!this.owner.level().isClientSide) {
+                ItemStack carried = this.getCarried();
+                if (!carried.isEmpty()) {
+                    ItemStack copy = carried.copy();
+                    int max = Math.min(64, copy.getMaxStackSize());
+                    copy.setCount(Math.min(copy.getCount(), max));
+                    this.bufferInventory.setItem(0, copy);
+                    this.updateClient();
+                }
+            }
+            return; // Empêche toute interaction vanilla avec le slot fantôme
+        }
+        super.clicked(slotId, dragType, clickType, player);
     }
 
     private static class AutoHidingSlot extends Slot {

@@ -1,7 +1,6 @@
 package tallestred.numismaticoverhaul.villagers.json.adapters;
 
 import com.google.gson.JsonObject;
-import io.wispforest.owo.util.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
@@ -31,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
+import net.minecraft.resources.ResourceKey;
 
 public class SellMapAdapter extends TradeJsonAdapter {
 
@@ -67,12 +67,15 @@ public class SellMapAdapter extends TradeJsonAdapter {
             if (!(entity.level() instanceof ServerLevel serverWorld)) return null;
 
             final var registry = serverWorld.registryAccess().registryOrThrow(Registries.STRUCTURE);
-            final Holder<Structure> feature = RegistryAccess.getEntry(registry, this.structureId);
+            final var featureKey = ResourceKey.create(Registries.STRUCTURE, this.structureId);
+            final var featureOpt = registry.getHolder(featureKey);
 
-            if (feature == null || feature.unwrapKey().isEmpty()) {
-                NumismaticOverhaul.LOGGER.error("Tried to create map to invalid structure " + this.structureId);
+            if (featureOpt.isEmpty()) {
+                NumismaticOverhaul.LOGGER.error("Tried to create map to invalid structure {}", this.structureId);
                 return null;
             }
+
+            final Holder<Structure> feature = featureOpt.get();
 
             final var result = serverWorld.getChunkSource().getGenerator().findNearestMapStructure(serverWorld, HolderSet.direct(feature),
                     entity.blockPosition(), 1500, true);
@@ -91,7 +94,11 @@ public class SellMapAdapter extends TradeJsonAdapter {
             ItemStack itemStack = MapItem.create(serverWorld, blockPos.getX(), blockPos.getZ(), (byte) 2, true, true);
             MapItem.renderBiomePreviewMap(serverWorld, itemStack);
             MapItemSavedData.addTargetDecoration(itemStack, blockPos, "+", iconType);
-            itemStack.set(DataComponents.CUSTOM_NAME, Component.translatable("filled_map." + feature.unwrapKey().get().location().getPath().toLowerCase(Locale.ROOT)));
+            String mapKey = feature.unwrapKey()
+                    .map(k -> k.location().getPath())
+                    .orElse(this.structureId.getPath())
+                    .toLowerCase(Locale.ROOT);
+            itemStack.set(DataComponents.CUSTOM_NAME, Component.translatable("filled_map." + mapKey));
             return new MerchantOffer(CurrencyHelper.getClosestTradeItem(price), Optional.of(new ItemCost(Items.MAP)), itemStack, this.maxUses, this.experience, multiplier);
         }
     }

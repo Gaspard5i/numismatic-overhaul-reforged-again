@@ -13,21 +13,24 @@ import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.Component;
 import io.wispforest.owo.ui.core.ParentComponent;
 import io.wispforest.owo.ui.util.UISounds;
-import tallestred.numismaticoverhaul.NumismaticOverhaul;
-import tallestred.numismaticoverhaul.block.ShopOffer;
-import tallestred.numismaticoverhaul.block.ShopScreenHandler;
-import tallestred.numismaticoverhaul.currency.CurrencyResolver;
-import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.inventory.Slot;
 import org.lwjgl.glfw.GLFW;
+import tallestred.numismaticoverhaul.NumismaticOverhaul;
+import tallestred.numismaticoverhaul.block.ShopOffer;
+import tallestred.numismaticoverhaul.block.ShopScreenHandler;
+import tallestred.numismaticoverhaul.currency.CurrencyResolver;
+import tallestred.numismaticoverhaul.network.ShopScreenHandlerRequestC2SPacket;
+import tallestred.numismaticoverhaul.network.UpdateShopScreenS2CPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +76,6 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
         rootComponent.childById(FlowLayout.class, "transfer-button").mouseDown().subscribe((x, y, button) -> {
             if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) return false;
             this.menu.toggleTransfer();
-            ;
             UISounds.playInteractionSound();
             return true;
         });
@@ -230,5 +232,56 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
     public int tab() {
         return this.tab;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Clic droit sur la case buffer: marquer l'objet tenu (copie, count=1)
+        if (this.tab == 1 && button == 1 && isHoveringBufferSlot(mouseX, mouseY)) {
+            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.SET_BUFFER_FROM_HELD));
+            UISounds.playInteractionSound();
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        // 1) Priorité: ajuster la quantité quand on survole la petite case (copie)
+        if (this.tab == 1 && isHoveringBufferSlot(mouseX, mouseY)) {
+            var stack = this.menu.getBufferStack();
+            if (!stack.isEmpty()) {
+                int current = stack.getCount();
+                int max = Math.min(64, stack.getMaxStackSize());
+                int next = Mth.clamp(current + (verticalAmount > 0 ? 1 : -1), 1, max);
+                if (next != current) {
+                    NumismaticOverhaul.MY_CHANNEL.clientHandle().send(
+                            new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.SET_BUFFER_COUNT, next));
+                    UISounds.playInteractionSound();
+                }
+                return true;
+            }
+        }
+
+        // 2) Sinon: scroll arrière sur un slot du shop => renvoyer vers l'inventaire joueur
+        if (verticalAmount < 0 && this.hoveredSlot != null) {
+            Slot slot = this.hoveredSlot;
+            if (slot != null && slot.index < this.menu.getShopSize() && slot.hasItem()) {
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(
+                        new ShopScreenHandlerRequestC2SPacket(
+                                ShopScreenHandlerRequestC2SPacket.Action.MOVE_SHOP_SLOT_TO_PLAYER,
+                                slot.index));
+                UISounds.playInteractionSound();
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    private boolean isHoveringBufferSlot(double mouseX, double mouseY) {
+        // Position du slot buffer dans le container: (186,14). Zone de 18x18 px
+        int x = this.leftPos + 186;
+        int y = this.topPos + 14;
+        return mouseX >= x && mouseX < x + 18 && mouseY >= y && mouseY < y + 18;
     }
 }

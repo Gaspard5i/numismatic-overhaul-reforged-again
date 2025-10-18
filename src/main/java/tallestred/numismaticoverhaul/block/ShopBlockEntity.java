@@ -120,6 +120,8 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, INVENTORY, registries);
+        // Nettoyer les offres invalides avant sérialisation (évite ItemStack.EMPTY)
+        this.sanitizeOffers();
         tag.put(SerializationContext.attributes(RegistriesAttribute.of(this.getLevel().registryAccess())), OFFERS_LIST, offers);
         tag.putBoolean("AllowsTransfer", this.allowsTransfer);
         tag.putLong("StoredCurrency", storedCurrency);
@@ -133,11 +135,18 @@ public class ShopBlockEntity extends BlockEntity implements ImplementedInventory
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, INVENTORY, registries);
         this.offers = tag.get(OFFERS_LIST);
+        // Retirer toute offre corrompue au chargement
+        this.sanitizeOffers();
         if (tag.contains("Owner")) {
             owner = tag.getUUID("Owner");
         }
         this.allowsTransfer = tag.getBoolean("AllowsTransfer");
         this.storedCurrency = tag.getLong("StoredCurrency");
+    }
+
+    private void sanitizeOffers() {
+        if (this.offers == null) return;
+        this.offers.removeIf(offer -> offer == null || offer.getSellStack().isEmpty());
     }
 
     public void addOrReplaceOffer(ShopOffer offer) {

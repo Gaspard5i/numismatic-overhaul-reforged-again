@@ -1,22 +1,9 @@
 package tallestred.numismaticoverhaul.network;
 
-import io.wispforest.endec.impl.ReflectiveEndecBuilder;
 import io.wispforest.owo.network.ClientAccess;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.data.registries.VanillaRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.block.ShopBlockEntity;
 import tallestred.numismaticoverhaul.block.ShopOffer;
 import tallestred.numismaticoverhaul.client.gui.ShopScreen;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.List;
 
