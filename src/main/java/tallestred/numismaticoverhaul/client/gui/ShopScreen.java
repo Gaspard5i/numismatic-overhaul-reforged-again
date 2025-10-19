@@ -257,11 +257,18 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
                             new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.SET_BUFFER_COUNT, next));
                     UISounds.playInteractionSound();
                 }
-                return true;
+                return true; // Consommé: évite tout autre effet
             }
+            return true; // Sur slot buffer vide: ne rien faire non plus
         }
 
-        // Laisser le comportement vanilla pour le reste
+        // 2) Ne jamais laisser la molette agir sur les slots (inventaire ou shop)
+        //    pour éviter toute division/prise implicite qui désynchronise la case copy.
+        if (this.tab == 1 && this.hoveredSlot != null) {
+            return true; // Consommer l'événement, pas de comportement vanilla
+        }
+
+        // 3) Sinon, laisser le comportement par défaut (ex: ScrollContainer des offres)
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
