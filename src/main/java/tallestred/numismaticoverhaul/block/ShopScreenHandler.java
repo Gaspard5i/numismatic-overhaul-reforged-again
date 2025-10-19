@@ -207,6 +207,13 @@ public class ShopScreenHandler extends AbstractContainerMenu {
         this.updateClient();
     }
 
+    public void clearBuffer() {
+        if (!this.owner.level().isClientSide) {
+            this.bufferInventory.setItem(0, ItemStack.EMPTY);
+            this.updateClient();
+        }
+    }
+
     public static ShopBlockEntity getShop(Player player, FriendlyByteBuf friendlyByteBuf) {
         ShopBlockEntity shopBlockEntity = (ShopBlockEntity) player.level().getBlockEntity(friendlyByteBuf.readBlockPos());
     /*    shopBlockEntity.setStoredCurrency(friendlyByteBuf.readLong());

@@ -25,13 +25,15 @@ public record ShopScreenHandlerRequestC2SPacket(Action action, long value) {
             case SET_BUFFER_FROM_HELD -> shopHandler.setBufferFromHeld();
             case SET_BUFFER_FROM_CARRIED -> shopHandler.setBufferFromCarried();
             case MOVE_SHOP_SLOT_TO_PLAYER -> shopHandler.moveShopSlotToPlayer((int) value);
+            case CLEAR_BUFFER -> shopHandler.clearBuffer();
         }
     }
 
     public enum Action {
         CREATE_OFFER, DELETE_OFFER, LOAD_OFFER, EXTRACT_CURRENCY, TOGGLE_TRANSFER,
         SET_BUFFER_COUNT, SET_BUFFER_FROM_HELD, SET_BUFFER_FROM_CARRIED,
-        MOVE_SHOP_SLOT_TO_PLAYER
+        MOVE_SHOP_SLOT_TO_PLAYER,
+        CLEAR_BUFFER
     }
 
 }

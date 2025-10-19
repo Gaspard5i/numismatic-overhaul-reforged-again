@@ -12,6 +12,7 @@ import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.Component;
 import io.wispforest.owo.ui.util.UISounds;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -234,11 +235,25 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Clic droit sur la case buffer: marquer l'objet tenu (copie, count=1)
-        if (this.tab == 1 && button == 1 && isHoveringBufferSlot(mouseX, mouseY)) {
-            NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.SET_BUFFER_FROM_HELD));
+        // Clic droit sur la case buffer: si main vide => vider; sinon copier depuis la main (count=1)
+        if (this.tab == 1 && isHoveringBufferSlot(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            var player = Minecraft.getInstance().player;
+            if (player != null && player.getMainHandItem().isEmpty()) {
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.CLEAR_BUFFER));
+            } else {
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.SET_BUFFER_FROM_HELD));
+            }
             UISounds.playInteractionSound();
             return true;
+        }
+        // Clic gauche sur la case buffer avec aucun objet en sélection (curseur vide) => vider
+        if (this.tab == 1 && isHoveringBufferSlot(mouseX, mouseY) && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            var player = Minecraft.getInstance().player;
+            if (player != null && player.containerMenu.getCarried().isEmpty()) {
+                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(new ShopScreenHandlerRequestC2SPacket(ShopScreenHandlerRequestC2SPacket.Action.CLEAR_BUFFER));
+                UISounds.playInteractionSound();
+                return true;
+            }
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -262,8 +277,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
             return true; // Sur slot buffer vide: ne rien faire non plus
         }
 
-        // 2) Ne jamais laisser la molette agir sur les slots (inventaire ou shop)
-        //    pour éviter toute division/prise implicite qui désynchronise la case copy.
+        // 2) Ne jamais laisser la molette agir sur les slots (inventaire ou shop) en onglet trades
         if (this.tab == 1 && this.hoveredSlot != null) {
             return true; // Consommer l'événement, pas de comportement vanilla
         }
