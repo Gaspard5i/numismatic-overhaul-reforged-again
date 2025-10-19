@@ -3,7 +3,6 @@ package tallestred.numismaticoverhaul.mixin;
 import net.minecraft.world.item.trading.ItemCost;
 import tallestred.numismaticoverhaul.cap.CurrencyHolder;
 import tallestred.numismaticoverhaul.currency.CurrencyHelper;
-import tallestred.numismaticoverhaul.init.DataAttachmentInit;
 import tallestred.numismaticoverhaul.init.ItemInit;
 import tallestred.numismaticoverhaul.item.CoinItem;
 import tallestred.numismaticoverhaul.item.MoneyBagItem;
@@ -41,7 +40,6 @@ public class MerchantScreenHandlerMixin {
     @Inject(method = "moveFromInventoryToPaymentSlot", at = @At("TAIL"))
     public void autofillOverride(int slot, ItemCost payment, CallbackInfo ci) {
         MerchantMenu handler = (MerchantMenu) (Object) this;
-        Player player = ((Inventory) handler.getSlot(3).container).player;
         ItemStack stack = payment.itemStack();
         if (stack.getItem() instanceof CoinItem) {
             numismatic$autofillWithCoins(slot, stack, handler);
@@ -85,6 +83,8 @@ public class MerchantScreenHandlerMixin {
             CurrencyHelper.deduceFromInventory(player, requiredCurrency);
         } else {
             CurrencyHelper.deduceFromInventory(player, availableCurrencyInPlayerInventory);
+            // Déduire le reste directement depuis le purse (corrige le non-update sur multi-types)
+            CurrencyHolder.silentModify(player, -neededCurrency);
         }
 
         handler.slots.get(slot).set(stack.copy());

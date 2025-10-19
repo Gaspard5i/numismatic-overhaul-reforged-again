@@ -11,7 +11,6 @@ import io.wispforest.owo.ui.component.TextureComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.Component;
-import io.wispforest.owo.ui.core.ParentComponent;
 import io.wispforest.owo.ui.util.UISounds;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -23,7 +22,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.inventory.Slot;
 import org.lwjgl.glfw.GLFW;
 import tallestred.numismaticoverhaul.NumismaticOverhaul;
 import tallestred.numismaticoverhaul.block.ShopOffer;
@@ -263,18 +261,7 @@ public class ShopScreen extends BaseUIModelHandledScreen<FlowLayout, ShopScreenH
             }
         }
 
-        // 2) Sinon: scroll arrière sur un slot du shop => renvoyer vers l'inventaire joueur
-        if (verticalAmount < 0 && this.hoveredSlot != null) {
-            Slot slot = this.hoveredSlot;
-            if (slot != null && slot.index < this.menu.getShopSize() && slot.hasItem()) {
-                NumismaticOverhaul.MY_CHANNEL.clientHandle().send(
-                        new ShopScreenHandlerRequestC2SPacket(
-                                ShopScreenHandlerRequestC2SPacket.Action.MOVE_SHOP_SLOT_TO_PLAYER,
-                                slot.index));
-                UISounds.playInteractionSound();
-                return true;
-            }
-        }
+        // Laisser le comportement vanilla pour le reste
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
